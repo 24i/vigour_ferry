@@ -3,6 +3,9 @@
   "version": "0.0.0",
   "description": "Pushes new timestamps for apps to be notified of updates",
   "main": "index.js",
+  "bin": {
+    "packerValid": "packerValid.js"
+  },
   "scripts": {
     "start": "./node_modules/.bin/forever index.js",
     "test": "echo 'Please `cd tests && node <component>.js`'"
