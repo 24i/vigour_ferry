@@ -1,0 +1,49 @@
+{
+  "name": "vigour-packer-server",
+  "version": "0.0.0",
+  "description": "Pushes new timestamps for apps to be notified of updates",
+  "main": "index.js",
+  "scripts": {
+    "start": "./node_modules/.bin/forever index.js",
+    "test": "echo 'Please `cd tests && node <component>.js`'"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/vigour-io/vigour-packer/server"
+  },
+  "keywords": [
+    "vigour",
+    "updates",
+    "assets",
+    "manager"
+  ],
+  "author": "vigour-io",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/vigour-io/vigour-packer/issues"
+  },
+  "dependencies": {
+    "blake2s": "^1.0.1",
+    "body-parser": "^1.6.5",
+    "btoa": "^1.1.2",
+    "compression": "^1.2.1",
+    "diskspace": "^0.1.7",
+    "eventemitter3": "^0.1.5",
+    "express": "^4.8.7",
+    "forever": "^0.14.1",
+    "graceful-fs": "^3.0.6",
+    "nodemailer": "^1.3.0",
+    "npmlog": "^0.1.1",
+    "oboe": "^2.1.1",
+    "pm2": "^0.12.14",
+    "promise": "^6.0.0",
+    "uglify-js": "^2.4.15",
+    "vigour-fs": "git+ssh://git@github.com:vigour-io/vigour-fs.git#master",
+    "vigour-js": "git+ssh://git@github.com:vigour-io/vigour-js.git#flux"
+  },
+  "homepage": "https://github.com/vigour-io/vigour-packer",
+  "devDependencies": {
+    "concat-stream": "^1.4.6",
+    "ncp": "^0.6.0"
+  }
+}
