@@ -31,6 +31,7 @@
     "btoa": "^1.1.2",
     "commander": "^2.8.1",
     "compression": "^1.2.1",
+    "concat-stream": "^1.4.6",
     "diskspace": "^0.1.7",
     "eventemitter3": "^0.1.5",
     "express": "^4.8.7",
@@ -48,7 +49,6 @@
   },
   "homepage": "https://github.com/vigour-io/vigour-packer",
   "devDependencies": {
-    "concat-stream": "^1.4.6",
     "ncp": "^0.6.0"
   }
 }
