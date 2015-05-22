@@ -8,12 +8,12 @@ var https = require('https')
 	, fs = require('vigour-fs')
 	, vConfig = require('vigour-js/util/config')
 	, hash = require('vigour-js/util/hash')
-	, config = require('./config')
-	, state = require('./state')
+	, State = require('./State')
 	, packerUtil = require('./packerUtil')
 	, helpers = require('./helpers')
-	, transformer = require('./transformer')
-	, shaHistory = require('./shaHistory')
+	, Transformer = require('./Transformer')
+	, ShaHistory = require('./ShaHistory')
+	, shaHistory
 
 	, read = Promise.denodeify(fs.readFile)
 	, write = Promise.denodeify(fs.writeFile)
@@ -25,20 +25,26 @@ var https = require('https')
 			fs.exists(path, resolve)
 		})
 	}
+	, transformer
+	, state
 
 module.exports = exports = Version
 
-function Version (sha) {
+function Version (sha, config) {
 	var self = this
+	transformer = new Transformer(config)
+	shaHistory = new ShaHistory(config)
+	self.config = config
 	self.sha = sha
-	self.root = path.join(config.assetRoot, config.shaDir, self.sha)
+	state = new State(config)
+	self.root = path.join(self.config.assetRoot, self.config.shaDir, self.sha)
 	self.packagePath = path.join(self.root
 		, 'package.json')
 	self.manifestPath = path.join(self.root
-		, config.buildDir
+		, self.config.buildDir
 		, 'manifest.json')
 	self.appCacheManifestPath = path.join(self.root
-		, config.buildDir
+		, self.config.buildDir
 		, 'manifest.appcache')
 	self.getManifest = helpers.getter(function () {
 		log.info("Creating manifest")
@@ -92,8 +98,8 @@ function Version (sha) {
 			.then(function (str) {
 				var parsed = JSON.parse(str)
 				parsed.sha = self.sha
-				parsed.repository.branch = config.git.branch
-				if (config.git.branch === "dev") {
+				parsed.repository.branch = self.config.git.branch
+				if (self.config.git.branch === "dev") {
 					parsed.version = helpers.hNow()
 						+ " "
 						+ "(" + self.sha + ")"
@@ -318,6 +324,7 @@ Version.prototype.makeAppCacheManifest = function (pkg) {
 				}, 0)
 			}
 		} catch (e) {
+			console.error("Error", e)
 			console.warn("Do you have `vigour.packer.web` and `vigour.packer.assets` in you package.json?")
 		}
 	})
@@ -404,12 +411,12 @@ Version.prototype.archive = function () {
 			if (history.indexOf(self.sha) === -1) {
 				history.push(self.sha)
 			}
-			while (history.length >= config.maxHistory) {
+			while (history.length >= self.config.maxHistory) {
 				mustErase = true
 				history.shift()
 			}
 			if (mustErase) {
-				Version.prototype.removeShas(history)
+				self.removeShas(history)
 			}
 			return history
 		})
@@ -419,8 +426,9 @@ Version.prototype.archive = function () {
 }
 
 Version.prototype.removeShas = function (history) {
-	return readdir(path.join(config.assetRoot
-			, config.shaDir))
+	var self = this
+	return readdir(path.join(self.config.assetRoot
+			, self.config.shaDir))
 		.catch(state.log("Can't read shas directory"))
 		.then(function (files) {
 			var toErase = files.filter(function (item) {
@@ -429,8 +437,8 @@ Version.prototype.removeShas = function (history) {
 				})
 			return Promise.all(
 				toErase.map(function (item) {
-					return remove(path.join(config.assetRoot
-							, config.shaDir
+					return remove(path.join(self.config.assetRoot
+							, self.config.shaDir
 							, item))
 						.catch(state.log("Can't remove obsolete sha"))
 				})
@@ -448,14 +456,14 @@ Version.prototype.download = function () {
 			resolve(self.getLocal())
 		} else {
 			options = {
-				hostname: config.git.api.hostname
+				hostname: self.config.git.api.hostname
 				, path: '/' + path.join('repos'
-					, config.git.owner
-					, config.git.repo
+					, self.config.git.owner
+					, self.config.git.repo
 					, 'git'
 					, 'commits'
 					, self.sha)
-				, headers: config.git.api.headers
+				, headers: self.config.git.api.headers
 				, method: 'HEAD'
 			}
 			req = https.request(options
@@ -481,14 +489,14 @@ Version.prototype.download = function () {
 
 Version.prototype.getLocal = function () {
 	var self = this
-	log.info(helpers.hNow() + " Cloning ", config.git.repo)
+	log.info(helpers.hNow() + " Copying ", self.config.src)
 	return new Promise(function (resolve, reject) {
 		log.info("heapUsed: ", process.memoryUsage().heapUsed)
 		sh('cp -fR '
-				+ config.git.branch
+				+ self.config.src
 				+ ' '
 				+ self.sha
-			, { cwd: path.join(config.assetRoot, config.shaDir) }
+			, { cwd: path.join(self.config.assetRoot, self.config.shaDir) }
 			, function (error, stdout, stderr) {
 				log.info("heapUsed: ", process.memoryUsage().heapUsed)
 				if (error) {
@@ -505,21 +513,21 @@ Version.prototype.getLocal = function () {
 
 Version.prototype.clone = function () {
 	var self = this
-	log.info(helpers.hNow() + " Cloning ", config.git.repo)
+	log.info(helpers.hNow() + " Cloning ", self.config.git.repo)
 	return new Promise(function (resolve, reject) {
 		log.info("heapUsed: ", process.memoryUsage().heapUsed)
 		sh('git clone --depth=1 -b '
-				+ config.git.branch
+				+ self.config.git.branch
 				+ ' '
-				+ config.git.url
+				+ self.config.git.url
 				+ ':'
-				+ config.git.owner
+				+ self.config.git.owner
 				+ '/'
-				+ config.git.repo
+				+ self.config.git.repo
 				+ '.git'
 				+ ' '
 				+ self.sha
-			, { cwd: path.join(config.assetRoot, config.shaDir) }
+			, { cwd: path.join(self.config.assetRoot, self.config.shaDir) }
 			, function (error, stdout, stderr) {
 				log.info("heapUsed: ", process.memoryUsage().heapUsed)
 				if (error) {

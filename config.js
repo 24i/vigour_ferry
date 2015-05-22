@@ -1,80 +1,51 @@
-var usage = "nohup npm start --"
-		+ " <git-owner>"
-		+ " <git-repo>"
-		+ " <git-branch>"
-		+ " <git-username>"
-		+ " <git-password>"
-		+ " <email-username>"
-		+ " <email-password>"
-		+ " <slack-path-part>"
-		+ " <slack-token>"
-		+ " <email-to>"
-		+ " <email-from>"
-		+ " &"
-		+ "\n\n\n"
-	, btoa = require('btoa')
-	, gitU = process.argv[5]
-	, gitP = process.argv[6]
-	, log = require("npmlog")
+var btoa = require('btoa')
+	, VObj = require('vigour-js/object')
+	, defaults
 
-
-module.exports = exports = {
-	git: {
-		url: 'git@github.com'
-		, owner: process.argv[2]
-		, repo: process.argv[3]
-		, branch: process.argv[4]
-		, username: gitU
-		, password: gitP
-		, listener: {
-			port: 8443
-		}
-		, api: {
-			hostname: 'api.github.com'
-			, headers: {
-				"Accept": 'application/vnd.github.v3+json'
-				, "User-Agent": 'vigour-packer-server'
-				, "Authorization": "Basic "
-					+ btoa(gitU
-						+ ":"
-						+ gitP)
+module.exports = exports = function (opts) {
+	var d = { retryAfter: 1
+		, minFreeSpace: 0.15
+		, assetRoot: __dirname + '/files'
+		, buildDir: 'packerBuilt'
+		, shaDir: 'shas'
+		, maxHistory: 3
+		, port: 8000
+		, shaPlaceholder: "SHA"
+		, shaHistoryName: 'history.json'
+		, stateFileName: "state.json"
+		, git:
+			{ branch: 'master'
+			, url: 'git@github.com'
+			, port: 8443
+			, api:
+				{ hostname: 'api.github.com'
+				, headers:
+					{ "Accept": 'application/vnd.github.v3+json'
+					, "User-Agent": 'vigour-packer-server'
+					, "Authorization": "Basic "
+					}
+				}
+			}
+		, slack: {
+				pathPart: (opts.slack && opts.slack.id)
+					? '/services/' + opts.slack.id
+					: "absent"
 			}
 		}
-	}
-	, email: {
-		username: process.argv[7]
-		, password: process.argv[8]
-	}
-	, assetRoot: __dirname + '/files'
-	, buildDir: 'packerBuilt'
-	, shaDir: 'shas'
-	, maxHistory: 3
-	, port: 8000
-	// , notifyCloudRetries: 5
-	// , cloudDisconnectDelay: 10 * 1000
-	// , notifyCloudRetryDelay: 5 * 1000
-	// , cloudNotificationDelay: 15 * 1000
-	, goLiveDelay: 0
-	, shaPlaceholder : 'SHA'
-	, shaHistoryName: 'history.json'
-	, mailFrom: process.argv[12]
-	, mailTo: process.argv[11]
-	, retryAfter: 1
-	, debug: true
-	, minFreeSpace: 0.15
-	, slack: {
-		path: '/services/' + process.argv[9]
-		, token: process.argv[10]
-	}
-}
-if (!exports.git.branch) {
-	console.warn('missing git.branch')
-	throw usage
-}
+	defaults = new VObj(d)
 
-exports.offlineMode = exports.git.branch.indexOf("/") !== -1
+	// console.log("defaults", defaults.raw)
 
-if (!exports.slack.token) {
-	console.log('missing slack.token')
-	throw usage
+	defaults.merge(opts)
+
+	if (defaults.git
+		&& defaults.git.username
+		&& defaults.git.password)
+	{
+		defaults.git.api.headers.Authorization.val = "Basic "
+				+ btoa(defaults.git.username.val
+					+ ":"
+					+ defaults.git.password.val)
+	}
+	return defaults.raw
 }

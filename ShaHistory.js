@@ -2,33 +2,35 @@ var path = require('path')
 	, log = require('npmlog')
 	, Promise = require('promise')
 	, fs = require('vigour-fs')
-	, config = require('./config')
-	, state = require('./state')
+	, State = require('./State')
 	, helpers = require('./helpers')
 
 	, read = Promise.denodeify(fs.readFile)
 	, write = Promise.denodeify(fs.writeFile)
-	, shaHistory = {}
+	, state
 
-module.exports = exports = shaHistory
+module.exports = exports = ShaHistory
 
-shaHistory.path = path.join(config.assetRoot
-	, config.shaHistoryName)
-shaHistory.resolvePending = function (value) {
+function ShaHistory (config) {
+	state = new State(config)
+	this.path = path.join(config.assetRoot
+		, config.shaHistoryName)
+}
+
+ShaHistory.prototype.resolvePending = function (value) {
 	this.settle(null, value)
 }
-shaHistory.rejectPending = function (reason) {
+ShaHistory.prototype.rejectPending = function (reason) {
 	this.settle(reason)
 }
-shaHistory.settle = function (err, data) {
+ShaHistory.prototype.settle = function (err, data) {
 	var cb
 	while (cb = this.pending.shift()) {
 		cb(err, data)
 	}
 }
-shaHistory.get = helpers.getter(function () {
-	log.info("Getting sha history", shaHistory.path)
-	return read(shaHistory.path, 'utf8')
+ShaHistory.prototype.get = helpers.getter(function () {
+	return read(this.path, 'utf8')
 		.then(function (data) {
 			var value = JSON.parse(data)
 			return value
@@ -44,14 +46,14 @@ shaHistory.get = helpers.getter(function () {
 		})
 		.catch(state.log("Can't get parsed sha history"))
 })
-shaHistory.save = function (newHistory) {
-	return write(shaHistory.path
+ShaHistory.prototype.save = function (newHistory) {
+	return write(this.path
 			, JSON.stringify(newHistory)
 			, 'utf8')
 		.catch(state.log("Can't write sha history"))
 }
 
-shaHistory.removeLatest = function () {
+ShaHistory.prototype.removeLatest = function () {
 	var self = this
 	return self.get()
 		.then(function (history) {

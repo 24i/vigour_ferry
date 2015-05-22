@@ -7,23 +7,29 @@ var path = require('path')
 	, vUtil = require('vigour-js/util')
 	, vConfig = require('vigour-js/util/config')
 	, vConfigUA = require('vigour-js/util/config/ua')
-	, config = require('./config')
-	, state = require('./state')
+	, State = require('./State')
+	, state
 	, helpers = require('./helpers')
 
 	, read = Promise.denodeify(fs.readFile)
 	, write = Promise.denodeify(fs.writeFile)
-	, transformer = {}
 
-module.exports = exports = transformer
+module.exports = exports = Transformer
 
-transformer.rebase = function (data, params, pkg) {
+function Transformer (opts) {
+	state = new State(opts)
+	this.config = opts
+	this.history.path = path.join(this.config.assetRoot
+		, 'transformHistory.json')
+}
+
+Transformer.prototype.rebase = function (data, params, pkg) {
 	var self = this
 	return new Promise(function (resolve, reject) {
 		var base = decodeURIComponent(params.fsRoot)
-			.replace('/' + config.shaPlaceholder + '/'
+			.replace('/' + self.config.shaPlaceholder + '/'
 				, '/' + pkg.sha + '/')
-		resolve(data.replace(transformer.rebase.rebaseRE
+		resolve(data.replace(Transformer.prototype.rebase.rebaseRE
 			, function (match
 				, p1
 				, p2
@@ -59,17 +65,17 @@ transformer.rebase = function (data, params, pkg) {
 				}))
 	})
 }
-transformer.rebase.params = ['fsRoot']
-transformer.rebase.rebaseRE =
+Transformer.prototype.rebase.params = ['fsRoot']
+Transformer.prototype.rebase.rebaseRE =
 	/(url\()(?:\s*(?!https?:\/\/|data:)((?:[^"'()\\]|\\(?:[^\n0-9a-fA-F]|[0-9a-fA-F]{1,6}\s?))*)\s*|\s*"(?!https?:\/\/|data:)((?:[^"\\\n]|\\(?:[^\n0-9a-fA-F]|[0-9a-fA-F]{1,6}\s?)|\\\n)*)"\s*|\s*'(?!https?:\/\/|data:)((?:[^'\\\n]|\\(?:[^\n0-9a-fA-F]|[0-9a-fA-F]{1,6}\s?)|\\\n)*)'\s*)(\))/gi
-transformer.rebase.stringToken = function (str, quote) {
+Transformer.prototype.rebase.stringToken = function (str, quote) {
 	return this.escapeChars(str, [quote, '\n'])
 }
-transformer.rebase.urlToken = function (str) {
+Transformer.prototype.rebase.urlToken = function (str) {
 	return this.escapeChars(str
 		, ["'", '"', "\\(", "\\)", "\\s", "[\\x00-\\x1F]"])
 }
-transformer.rebase.escapeChars = function (str, chars) {
+Transformer.prototype.rebase.escapeChars = function (str, chars) {
 	var l = chars.length
 		, i
 	for (i = 0; i < l; i += 1) {
@@ -77,7 +83,7 @@ transformer.rebase.escapeChars = function (str, chars) {
 	}
 	return str
 }
-transformer.rebase.escapeChar = function (str, char) {
+Transformer.prototype.rebase.escapeChar = function (str, char) {
 	var	la = (char === "\\\\")
 			? "(?!\\\\)"
 			: ""
@@ -107,7 +113,7 @@ transformer.rebase.escapeChar = function (str, char) {
 	})
 }
 
-transformer.uglify = function (data, params, pkg) {
+Transformer.prototype.uglify = function (data, params, pkg) {
 	return new Promise(function (resolve, reject) {
 		var ugly = UglifyJS.minify(data, {
 			fromString: true
@@ -116,7 +122,7 @@ transformer.uglify = function (data, params, pkg) {
 	})
 }
 
-transformer.inform = function (data, params, pkg) {
+Transformer.prototype.inform = function (data, params, pkg) {
 	return new Promise(function (resolve, reject) {
 		var prefix
 			, uaSpecific = vUtil.clone(pkg)
@@ -129,9 +135,9 @@ transformer.inform = function (data, params, pkg) {
 		resolve(prefix + data)
 	})
 }
-transformer.inform.params = ['ua']
+Transformer.prototype.inform.params = ['ua']
 
-transformer.transform = function (data, transforms, params, pkg) {
+Transformer.prototype.transform = function (data, transforms, params, pkg) {
 	self = this
 	return new Promise(function (resolve, reject) {
 		var l = transforms.length
@@ -152,23 +158,23 @@ transformer.transform = function (data, transforms, params, pkg) {
 		}
 	})
 }
-transformer.history = {}
-transformer.history.path = path.join(config.assetRoot
-	, 'transformHistory.json')
-transformer.history.resolvePending = function (value) {
+Transformer.prototype.history = {}
+Transformer.prototype.history.path = null
+Transformer.prototype.history.resolvePending = function (value) {
 	this.settle(null, value)
 }
-transformer.history.rejectPending = function (reason) {
+Transformer.prototype.history.rejectPending = function (reason) {
 	this.settle(reason)
 }
-transformer.history.settle = function (err, data) {
+Transformer.prototype.history.settle = function (err, data) {
 	var cb
 	while (cb = this.pending.shift()) {
 		cb(err, data)
 	}
 }
-transformer.history.get = helpers.getter(function () {
-	return read(transformer.history.path, 'utf8')
+Transformer.prototype.history.get = helpers.getter(function () {
+	var self = this
+	return read(self.path, 'utf8')
 		.then(function (data) {
 			var value = JSON.parse(data)
 			return value
@@ -184,7 +190,7 @@ transformer.history.get = helpers.getter(function () {
 		})
 		.catch(state.log("Can't get parsed transform history"))
 })
-transformer.history.save = function (file, id, toSave) {
+Transformer.prototype.history.save = function (file, id, toSave) {
 	var self = this
 	self.get()
 		.then(function (data) {
@@ -193,7 +199,7 @@ transformer.history.save = function (file, id, toSave) {
 			}
 			if (!data[file][id]) {
 				data[file][id] = toSave
-				return write(transformer.history.path
+				return write(self.history.path
 						, JSON.stringify(data)
 						, 'utf8')
 					.catch(state.log("Can't write transform history"))

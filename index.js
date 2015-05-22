@@ -1,5 +1,4 @@
-var config = require('./config')
-	, https = require('https')
+var https = require('https')
 	, path = require('path')
 	, repl = require('repl')
 	, url = require('url')
@@ -19,19 +18,96 @@ var config = require('./config')
 	, Version = require('./Version')
 	, PrepQueue = require('./PrepQueue')
 	, helpers = require('./helpers')
-	, shaHistory = require('./shaHistory')
-	, state = require('./state')
-	, error = require('./error')
-
-	, web = express()
-	, server
-	, github = express()
-	, gitListener
-	, live
-	, latestNewSha
+	, ShaHistory = require('./ShaHistory')
+	, shaHistory
+	, State = require('./state')
+	, ErrorManager = require('./error')
+	, error
+	, serverPkg = require('./package.json')
+	, configure = require('./config')
+	, config
+	, state
 	, prepQueue = new PrepQueue()
-
+	, live
+	, server
+	, web
+	, github
+	, gitListener
+	, latestNewSha
 	, r
+
+module.exports = exports = function (opts) {
+	var self = this
+
+	web = express()
+	github = express()
+		
+	config = configure(opts.vigour.packer.raw)
+	error = new ErrorManager(config)
+	state = new State(config)
+	shaHistory = new ShaHistory(config)
+	web.use(compress())
+	web.use(logRequest)
+	web.use(getUA)
+	web.get('/'
+		, getSha
+		, fbMeta
+		, addHeaders
+		, serveIndex
+		, serveCode(500))
+	web.post('/status'
+		, bodyParser.urlencoded({
+			extended: true
+		})
+		, serveStatus
+		, serveCode(500))
+	web.get('/manifest.json'
+		, serveManifest
+		, addHeaders
+		, serveFile
+		, warnDevMid("Can't serve manifest.json")
+		, serveCode(500))
+	web.get('/favicon.ico'
+		, getSha
+		, prepFavicon
+		, serveFile
+		// , warnDevMid("Can't serve favicon.ico")
+		, serveCode(500))
+	web.get('/robots.txt'
+		, prepRobots
+		, serveFile
+		// , warnDevMid("Can't serve robots.txt")
+		, serveCode(500))
+	web.get('/geo'
+		, prepGeo
+		, serveFile
+		, warnDevMid("Can't serve geo")
+		, serveCode(500))
+	web.get('/native/:sha/*'
+		, prepShaRequest
+		, getSha
+		, fbMeta
+		, getAsset
+		, addHeaders
+		, serveFile
+		, serveCode(404))
+	web.get('*'
+		, getSha
+		, fbMeta
+		, getAsset
+		, addHeaders
+		, serveFile
+		, notfound
+		, serveCode(500))
+
+	web.use(serveCode(400))
+
+	github.post('/push', handleHookshot)
+	github.use(serveCode(404))
+
+	init()
+		.catch(state.log("Can't init", true))
+}
 
 function warnDevMid (msg) {
 	return function (req, res, next) {
@@ -40,67 +116,7 @@ function warnDevMid (msg) {
 	}
 }
 
-web.use(compress())
-web.use(logRequest)
-web.use(getUA)
-web.get('/'
-	, getSha
-	, fbMeta
-	, addHeaders
-	, serveIndex
-	, serveCode(500))
-web.post('/status'
-	, bodyParser.urlencoded({
-		extended: true
-	})
-	, serveStatus
-	, serveCode(500))
-web.get('/manifest.json'
-	, serveManifest
-	, addHeaders
-	, serveFile
-	, warnDevMid("Can't serve manifest.json")
-	, serveCode(500))
-web.get('/favicon.ico'
-	, getSha
-	, prepFavicon
-	, serveFile
-	// , warnDevMid("Can't serve favicon.ico")
-	, serveCode(500))
-web.get('/robots.txt'
-	, prepRobots
-	, serveFile
-	// , warnDevMid("Can't serve robots.txt")
-	, serveCode(500))
-web.get('/geo'
-	, prepGeo
-	, serveFile
-	, warnDevMid("Can't serve geo")
-	, serveCode(500))
-web.get('/native/:sha/*'
-	, prepShaRequest
-	, getSha
-	, fbMeta
-	, getAsset
-	, addHeaders
-	, serveFile
-	, serveCode(404))
-web.get('*'
-	, getSha
-	, fbMeta
-	, getAsset
-	, addHeaders
-	, serveFile
-	, notfound
-	, serveCode(500))
 
-web.use(serveCode(400))
-
-github.post('/push', handleHookshot)
-github.use(serveCode(404))
-
-init()
-	.catch(state.log("Can't init", true))
 
 function serveStatus (req, res, next) {
 	if (req.body.token === config.slack.token) {
@@ -146,9 +162,10 @@ function serveStatus (req, res, next) {
 }
 
 function init () {
+	var self = this
 	return getLatestSha()
-		.catch(wrongBranch)
 		.catch(state.log("Can't get latest SHA", true))
+		.catch(wrongBranch)
 		.then(offerSha)
 		.catch(fixCatch)
 		.then(acceptRequests)
@@ -164,8 +181,8 @@ function fix (reason) {
 		.then(Version.prototype.removeSha
 			, state.log("Can't remove latest SHA", false, true))
 		.then(getLatestSha)
-		.catch(wrongBranch)
 		.catch(state.log("Can't get latest SHA after removing it", true))
+		.catch(wrongBranch)
 		.then(offerSha)
 }
 
@@ -183,9 +200,15 @@ function getLatestSha () {
 	return new Promise(function (resolve, reject) {
 		var options
 			, req
-		if (config.offlineMode) {
+		if (config.src) {
 			resolve('_local')
-		} else {
+		} else if (config.git.api.hostname
+				&& config.git.owner
+				&& config.git.repo
+				&& config.git.branch
+				&& config.git.api.headers
+				&& config.git.username
+				&& config.git.password) {
 			options = {
 				hostname: config.git.api.hostname
 				, path: path.join('/repos'
@@ -223,6 +246,8 @@ function getLatestSha () {
 				reject(err)
 			})
 			req.end()
+		} else {
+			throw new Error("Missing config.src or config.git.*")
 		}
 	})
 }
@@ -258,7 +283,7 @@ function offerSha (sha) {
 	var v
 		, ready
 
-	v = new Version(sha)
+	v = new Version(sha, config)
 	latestNewSha = sha
 
 	ready = prepQueue.add()
@@ -421,8 +446,8 @@ function startRepl () {
 }
 
 function acceptHookshots () {
-	gitListener = github.listen(config.git.listener.port)
-	log.info("Listening for hookshots on port", config.git.listener.port)
+	gitListener = github.listen(config.git.port)
+	log.info("Listening for hookshots on port", config.git.port)
 }
 
 // MIDDLEWARE
@@ -482,7 +507,7 @@ function prepShaRequest (req, res, next) {
 
 function getSha (req, res, next) {
 	if (req.params.sha) {
-		req.sha = new Version(req.params.sha)
+		req.sha = new Version(req.params.sha, config)
 		next()
 	} else if (live) {
 		req.sha = live

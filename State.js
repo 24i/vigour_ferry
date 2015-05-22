@@ -2,18 +2,30 @@ var path = require('path')
   , Promise = require('promise')
   , fs = require('graceful-fs')
   , log = require('npmlog')
-  , config = require('./config')
   , helpers = require('./helpers')
-  , error = require('./error')
+  , ErrorManager = require('./error')
   , read = Promise.denodeify(fs.readFile)
   , write = Promise.denodeify(fs.writeFile)
+  , _instance
+module.exports = exports = State
 
-module.exports = exports = {}
-exports.log = function (msg, warnDev, ignore) {
+function State (config) {
+  if (_instance) {
+    return _instance
+  } else {
+    this.path = path.join(config.assetRoot, config.stateFileName)
+    this.error = new ErrorManager(config)
+    _instance = this
+    return this
+  }
+}
+
+State.prototype.log = function (msg, warnDev, ignore) {
+  var self = this
   return function (reason) {
-    error.print(msg, reason)
+    self.error.print(msg, reason)
     if (warnDev && !reason.warned) {
-      exports.warnDev(msg + "; reason: " + reason)
+      self.warnDev(msg + "; reason: " + reason)
       reason.warned = true
     }
     if (ignore) {
@@ -23,22 +35,21 @@ exports.log = function (msg, warnDev, ignore) {
     }
   }
 }
-exports.path = path.join(config.assetRoot
-  , 'state.json')
-exports.resolvePending = function (value) {
+State.prototype.resolvePending = function (value) {
   this.settle(null, value)
 }
-exports.rejectPending = function (reason) {
+State.prototype.rejectPending = function (reason) {
   this.settle(reason)
 }
-exports.settle = function (err, data) {
+State.prototype.settle = function (err, data) {
   var cb
   while (cb = this.pending.shift()) {
     cb(err, data)
   }
 }
-exports.get = helpers.getter(function () {
-  return read(exports.path, 'utf8')
+State.prototype.get = helpers.getter(function () {
+  var self = this
+  return read(self.path, 'utf8')
     .then(function (data) {
       var value = JSON.parse(data)
       return value
@@ -52,45 +63,47 @@ exports.get = helpers.getter(function () {
         throw reason
       }
     })
-    .catch(exports.log("Can't get state"))
+    .catch(self.log("Can't get state"))
 })
-exports.save = function (key, value) {
+State.prototype.save = function (key, value) {
   var self = this
   return self.get()
     .catch("Can't state.get")
     .then(function (data) {
       data[key] = value
-      return write(exports.path
+      return write(self.path
             , JSON.stringify(data)
             , 'utf8')
-          .catch(exports.log("Can't write state"))
+          .catch(self.log("Can't write state"))
     })
-    .catch(exports.log("Can't save state"))
+    .catch(self.log("Can't save state"))
 }
-exports.isAlreadyWarned = function () {
-  return exports.get()
-    .catch(exports.log("Can't state.get"))
+State.prototype.isAlreadyWarned = function () {
+  var self = this
+  return self.get()
+    .catch(self.log("Can't state.get"))
     .then(function (data) {
       return data.lastWarning
         && (!data.lastGoLive
           || data.lastWarning > data.lastGoLive)
     })
 }
-exports.warnDev = function (msg, quiet) {
-  return exports.isAlreadyWarned()
-    .catch(exports.log("Can't check if already warned"))
+State.prototype.warnDev = function (msg, quiet) {
+  var self = this
+  return self.isAlreadyWarned()
+    .catch(self.log("Can't check if already warned"))
     .then(function (alreadyWarned) {
       if (!alreadyWarned) {
-        return error.warnDev(msg)
-          .catch(exports.log("Can't error.warnDev"))
+        return self.error.warnDev(msg)
+          .catch(self.log("Can't error.warnDev"))
           .then(function () {
             t = Date.now()
             if (!quiet) {
-              return exports.get()
-                .catch(exports.log("Can't state.get"))
+              return self.get()
+                .catch(self.log("Can't state.get"))
                 .then(function (data) {
                   data.lastWarning = t
-                  return exports.save(data)
+                  return self.save(data)
                 })
             }
           })
