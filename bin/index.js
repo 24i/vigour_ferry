@@ -157,12 +157,12 @@ program
 		, "e-mail address in the 'from' field when packer emits alerts")
 	.option("--mail-username <name>"
 		, "username of e-mail account packer should use to send alerts")
-	.option("--mail-password"
+	.option("--mail-password <password>"
 		, "password for account associated to --mail-username")
 
-	.option("--slack-id"
+	.option("--slack-id <id>"
 		, "string identifying the slack service packer should reach when emiting alerts")
-	.option("--slack-token"
+	.option("--slack-token <token>"
 		, "token packer should use when authentifying with slack")
 	.parse(process.argv)
 
