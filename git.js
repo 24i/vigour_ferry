@@ -108,8 +108,8 @@ exports.newBranch = function (branch, repo) {
 					reject(error)
 				} else {
 					console.log("Need a minimum to commit")
-					writeFile(path.join(repo, "package.json")
-							, "{}"
+					writeFile(path.join(repo, "README.md")
+							, "Just something to push"
 							, 'utf8')
 						.then(function () {
 							return new Promise(function (resolve, reject) {
