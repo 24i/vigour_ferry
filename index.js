@@ -847,6 +847,7 @@ function syncAssets () {
 						.then(function (newAssets) {
 							var key
 								, arr = []
+							newAssets['package.json'] = true
 							for (key in newAssets) {
 								arr.push(cp(path.join(config.cwd, key)
 									, path.join(config.git.releaseRepo.absPath, key)))
