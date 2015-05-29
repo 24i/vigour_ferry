@@ -93,12 +93,11 @@ function Version (sha, config) {
 	})
 
 	self.getPkg = helpers.getter(function () {
-		log.info("Creating pkg", self.packagePath)
+		log.info("Creating pkg from", self.packagePath)
 		return read(self.packagePath, 'utf8')
 			.then(function (str) {
 				var parsed = JSON.parse(str)
 				parsed.sha = self.sha
-				console.log('EXHIBIT B', parsed)
 				parsed.repository.branch = self.config.git.branch
 				if (self.config.git.branch === "dev") {
 					parsed.version = helpers.hNow()
