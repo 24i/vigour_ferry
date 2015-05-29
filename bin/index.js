@@ -54,6 +54,9 @@ opts.merge(secretPkg)
 
 // ENV
 // Packer
+if (process.env.PACKER_RELEASE) {
+	env.vigour.packer.release = process.env.PACKER_RELEASE
+}
 if (process.env.PACKER_SRC) {
 	env.vigour.packer.src = process.env.PACKER_SRC
 }
@@ -132,6 +135,7 @@ opts.merge(env)
 program
 	.version(pkg.version)
 	.usage("[options]")
+	.option("-r, --release", "Commits assets declared in package to release branch (<this_branch>-release), creating it if needed")
 	.option("-p, --port <port>", "port packer should listen on")
 	.option("-h, --history <maxHistory>", "maximum number of versions of the app to keep in history")
 	.option("--validate", "validates package and exits")
@@ -167,6 +171,9 @@ program
 	.parse(process.argv)
 
 // Packer
+if (program.release) {
+	cliArgs.vigour.packer.release = program.release
+}
 if (program.buildDir) {
 	cliArgs.vigour.packer.buildDir = program.buildDir
 }
@@ -245,18 +252,19 @@ if (opts.vigour.packer.git && opts.vigour.packer.git.branch) {
 	try {
 		packer(opts)
 	} catch (e) {
-		console.error("Error starting packer", e)
+		console.error("Error serving specified branch " + opts.vigour.packer.git.branch, e)
 	}
 } else {
 	getGitHead(process.cwd())
 		.then(function (gitHead) {
 			var extra = { vigour: { packer: { git: { branch: gitHead } } } }
+				, err
 			console.warn("Guessing branch:", gitHead)
 			opts.merge(extra)
 			try {
 				packer(opts)
 			} catch (e) {
-				console.error("error starting packer", e)
+				console.error("Error serving guessed branch " + gitHead, e, e.stack)
 			}
 		})
 		.catch(function (reason) {

@@ -2,6 +2,7 @@ var https = require('https')
 	, path = require('path')
 	, repl = require('repl')
 	, url = require('url')
+	, fs = require('vigour-fs')
 	
 	, express = require('express')
 	, oboe = require('oboe')
@@ -11,9 +12,13 @@ var https = require('https')
 	, concat = require('concat-stream')
 	, log = require('npmlog')
 	, diskspace = require('diskspace')
+
 	// , vCloud = require('vigour-js/browser/network/cloud')
 	// 	.inject(require('vigour-js/browser/network/cloud/datacloud'))
-
+	, flatten = require('vigour-js/util/flatten')
+	, ajax = require('vigour-js/browser/network/ajax')
+	, readFile = Promise.denodeify(fs.readFile)
+	, cp = Promise.denodeify(fs.cp)
 	
 	, Version = require('./Version')
 	, PrepQueue = require('./PrepQueue')
@@ -25,6 +30,7 @@ var https = require('https')
 	, error
 	, serverPkg = require('./package.json')
 	, configure = require('./config')
+	, git = require('./git')
 	, config
 	, state
 	, prepQueue = new PrepQueue()
@@ -39,74 +45,80 @@ var https = require('https')
 module.exports = exports = function (opts) {
 	var self = this
 
-	web = express()
-	github = express()
-		
 	config = configure(opts.vigour.packer.raw)
-	error = new ErrorManager(config)
-	state = new State(config)
-	shaHistory = new ShaHistory(config)
-	web.use(compress())
-	web.use(logRequest)
-	web.use(getUA)
-	web.get('/'
-		, getSha
-		, fbMeta
-		, addHeaders
-		, serveIndex
-		, serveCode(500))
-	web.post('/status'
-		, bodyParser.urlencoded({
-			extended: true
-		})
-		, serveStatus
-		, serveCode(500))
-	web.get('/manifest.json'
-		, serveManifest
-		, addHeaders
-		, serveFile
-		, warnDevMid("Can't serve manifest.json")
-		, serveCode(500))
-	web.get('/favicon.ico'
-		, getSha
-		, prepFavicon
-		, serveFile
-		// , warnDevMid("Can't serve favicon.ico")
-		, serveCode(500))
-	web.get('/robots.txt'
-		, prepRobots
-		, serveFile
-		// , warnDevMid("Can't serve robots.txt")
-		, serveCode(500))
-	web.get('/geo'
-		, prepGeo
-		, serveFile
-		, warnDevMid("Can't serve geo")
-		, serveCode(500))
-	web.get('/native/:sha/*'
-		, prepShaRequest
-		, getSha
-		, fbMeta
-		, getAsset
-		, addHeaders
-		, serveFile
-		, serveCode(404))
-	web.get('*'
-		, getSha
-		, fbMeta
-		, getAsset
-		, addHeaders
-		, serveFile
-		, notfound
-		, serveCode(500))
 
-	web.use(serveCode(400))
+	if (config.release) {
+		release()
+	} else {
+		web = express()
+		github = express()
+			
+		
+		error = new ErrorManager(config)
+		state = new State(config)
+		shaHistory = new ShaHistory(config)
+		web.use(compress())
+		web.use(logRequest)
+		web.use(getUA)
+		web.get('/'
+			, getSha
+			, fbMeta
+			, addHeaders
+			, serveIndex
+			, serveCode(500))
+		web.post('/status'
+			, bodyParser.urlencoded({
+				extended: true
+			})
+			, serveStatus
+			, serveCode(500))
+		web.get('/manifest.json'
+			, serveManifest
+			, addHeaders
+			, serveFile
+			, warnDevMid("Can't serve manifest.json")
+			, serveCode(500))
+		web.get('/favicon.ico'
+			, getSha
+			, prepFavicon
+			, serveFile
+			// , warnDevMid("Can't serve favicon.ico")
+			, serveCode(500))
+		web.get('/robots.txt'
+			, prepRobots
+			, serveFile
+			// , warnDevMid("Can't serve robots.txt")
+			, serveCode(500))
+		web.get('/geo'
+			, prepGeo
+			, serveFile
+			, warnDevMid("Can't serve geo")
+			, serveCode(500))
+		web.get('/native/:sha/*'
+			, prepShaRequest
+			, getSha
+			, fbMeta
+			, getAsset
+			, addHeaders
+			, serveFile
+			, serveCode(404))
+		web.get('*'
+			, getSha
+			, fbMeta
+			, getAsset
+			, addHeaders
+			, serveFile
+			, notfound
+			, serveCode(500))
 
-	github.post('/push', handleHookshot)
-	github.use(serveCode(404))
+		web.use(serveCode(400))
 
-	init()
-		.catch(state.log("Can't init", true))
+		github.post('/push', handleHookshot)
+		github.use(serveCode(404))
+
+		init()
+			.catch(state.log("Can't init", true))
+	}
 }
 
 function warnDevMid (msg) {
@@ -795,4 +807,73 @@ function setHeaders (res, opts) {
 
 	// res.set("cache-control", "public, max-age=0")
 	// res.set("Edge-Control", "public, max-age=0")
+}
+
+function getReleaseRepo () {
+	return new Promise(function (resolve, reject) {
+		fs.exists(config.git.releaseRepo.absPath, function (exists) {
+			if (exists) {
+				resolve()
+			} else {
+				resolve(
+					git.isReleaseOnGitHub(config)
+						.then(function (is) {
+							if (is) {
+								return git.cloneRelease(config)
+							} else {
+								return git.createRelease(config)
+									.then(function () {
+										return git.cloneRelease(config)	
+									})
+							}
+						})
+				)
+			}
+		})
+	})
+}
+
+function syncAssets () {
+	return new Promise(function (resolve, reject) {
+		helpers.sh('rm -rf *'
+			, { cwd: config.git.releaseRepo.absPath }
+			, function (error, stdout, stderr) {
+				if (error) {
+					reject(error)
+				} else {
+					console.log("Copying assets")
+					resolve(fs.expandStars(config.assets, config.cwd)
+						.then(flatten)
+						.then(function (newAssets) {
+							var key
+								, arr = []
+							for (key in newAssets) {
+								arr.push(cp(path.join(config.cwd, key)
+									, path.join(config.git.releaseRepo.absPath, key)))
+							}
+							return Promise.all(arr)
+						})
+					)
+				}
+			})
+	})
+}
+
+
+
+function release () {
+	getReleaseRepo()
+		.then(function () {
+			return git.checkoutRelease(config)
+		})
+		.then(function () {
+			return git.pullRelease(config)
+		})
+		.then(syncAssets)
+		.then(function () {
+			return git.commitRelease(config)
+		})
+		.catch(function (reason) {
+			log.error("oops", reason)
+		})
 }

@@ -1,5 +1,5 @@
 var Promise = require('promise')
-
+	, proc = require('child_process')
 module.exports = exports = {}
 
 exports.getter = function (create) {
@@ -74,4 +74,17 @@ exports.hNow = function () {
 		return val
 	}
 	return dateTime
+}
+
+
+exports.sh = function (command, opts, cb) {
+	console.log('Executing `', command, '`\n\tCWD:', opts.cwd )
+	
+	// log.info('Setting UID to'
+	//	, process.env.GIT_UID
+	//	, "(" + typeof parseInt(process.env.GIT_UID, 10) + ")")
+	// process.setuid(parseInt(process.env.GIT_UID, 10))
+	proc.exec(command
+		, { cwd: opts.cwd }
+		, cb)
 }

@@ -1,5 +1,5 @@
 var https = require('https')
-	, proc = require('child_process')
+	
 	, path = require('path')
 
 	, log = require('npmlog')
@@ -492,7 +492,7 @@ Version.prototype.getLocal = function () {
 	log.info(helpers.hNow() + " Copying ", self.config.src)
 	return new Promise(function (resolve, reject) {
 		log.info("heapUsed: ", process.memoryUsage().heapUsed)
-		sh('cp -fR '
+		helpers.sh('cp -fR '
 				+ self.config.src
 				+ ' '
 				+ self.sha
@@ -516,7 +516,7 @@ Version.prototype.clone = function () {
 	log.info(helpers.hNow() + " Cloning ", self.config.git.repo)
 	return new Promise(function (resolve, reject) {
 		log.info("heapUsed: ", process.memoryUsage().heapUsed)
-		sh('git clone --depth=1 -b '
+		helpers.sh('git clone --depth=1 -b '
 				+ self.config.git.branch
 				+ ' '
 				+ self.config.git.url
@@ -594,16 +594,4 @@ Version.prototype.expandStars = function (src, rootPath, cb) {
 			}
 		}
 	}
-}
-
-function sh (command, opts, cb) {
-	log.info('Executing `', command, '`\n\tCWD:', opts.cwd )
-	
-	// log.info('Setting UID to'
-	//	, process.env.GIT_UID
-	//	, "(" + typeof parseInt(process.env.GIT_UID, 10) + ")")
-	// process.setuid(parseInt(process.env.GIT_UID, 10))
-	proc.exec(command
-		, { cwd: opts.cwd }
-		, cb)
 }
