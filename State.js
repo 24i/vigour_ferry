@@ -3,7 +3,7 @@ var path = require('path')
   , fs = require('graceful-fs')
   , log = require('npmlog')
   , helpers = require('./helpers')
-  , ErrorManager = require('./error')
+  , ErrorManager = require('./Error')
   , read = Promise.denodeify(fs.readFile)
   , write = Promise.denodeify(fs.writeFile)
   , _instance
