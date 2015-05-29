@@ -489,34 +489,25 @@ Version.prototype.download = function () {
 
 Version.prototype.getLocal = function () {
 	var self = this
+	log.info("heapUsed: ", process.memoryUsage().heapUsed)
 	log.info(helpers.hNow() + " Copying ", self.config.src)
-	return new Promise(function (resolve, reject) {
-		log.info("heapUsed: ", process.memoryUsage().heapUsed)
-		helpers.sh('cp -fR '
+	return helpers.sh('cp -fR '
 				+ self.config.src
 				+ ' '
 				+ self.sha
-			, { cwd: path.join(self.config.assetRoot, self.config.shaDir) }
-			, function (error, stdout, stderr) {
-				log.info("heapUsed: ", process.memoryUsage().heapUsed)
-				if (error) {
-					console.log(stdout)
-					console.error(stderr)
-					reject(error)
-				} else {
-					log.info(helpers.hNow(), "Done cloning")
-					resolve(stdout)
-				}
-			})
-	})
+			, { cwd: path.join(self.config.assetRoot, self.config.shaDir) })
+		.then(function () {
+			log.info(helpers.hNow(), "Done cloning")
+			log.info("heapUsed: ", process.memoryUsage().heapUsed)
+			return true
+		})
 }
 
 Version.prototype.clone = function () {
 	var self = this
+	log.info("heapUsed: ", process.memoryUsage().heapUsed)
 	log.info(helpers.hNow() + " Cloning ", self.config.git.repo)
-	return new Promise(function (resolve, reject) {
-		log.info("heapUsed: ", process.memoryUsage().heapUsed)
-		helpers.sh('git clone --depth=1 -b '
+	return helpers.sh('git clone --depth=1 -b '
 				+ self.config.git.branch
 				+ ' '
 				+ self.config.git.url
@@ -527,17 +518,12 @@ Version.prototype.clone = function () {
 				+ '.git'
 				+ ' '
 				+ self.sha
-			, { cwd: path.join(self.config.assetRoot, self.config.shaDir) }
-			, function (error, stdout, stderr) {
-				log.info("heapUsed: ", process.memoryUsage().heapUsed)
-				if (error) {
-					reject(error)
-				} else {
-					log.info(helpers.hNow(), "Done cloning")
-					resolve(stdout)
-				}
-			})
-	})
+			, { cwd: path.join(self.config.assetRoot, self.config.shaDir) })
+		.then(function () {
+			log.info(helpers.hNow(), "Done cloning")
+			log.info("heapUsed: ", process.memoryUsage().heapUsed)
+			return true
+		})
 }
 
 Version.prototype.cleanup = function () {

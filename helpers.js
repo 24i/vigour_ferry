@@ -78,13 +78,23 @@ exports.hNow = function () {
 
 
 exports.sh = function (command, opts, cb) {
-	console.log('Executing `', command, '`\n\tCWD:', opts.cwd )
-	
-	// log.info('Setting UID to'
-	//	, process.env.GIT_UID
-	//	, "(" + typeof parseInt(process.env.GIT_UID, 10) + ")")
-	// process.setuid(parseInt(process.env.GIT_UID, 10))
-	proc.exec(command
+	var p = new Promise(function (resolve, reject) {
+		console.log('Executing `', command, '`\n\tCWD:', opts.cwd )
+		proc.exec(command
 		, { cwd: opts.cwd }
-		, cb)
+		, function (error, stderr, stdout) {
+			if (error) {
+				console.error(stderr)
+				reject(error)
+			} else {
+				resolve(stdout)
+			}
+		})	
+	})
+	if (cb) {
+		p.then(function (val) {
+			cb(null, val)
+		}, cb)
+	}
+	return p
 }

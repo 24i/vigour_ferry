@@ -8,64 +8,28 @@ var https = require('https')
 module.exports = exports = {}
 
 exports.clone = function (src, dest) {
-	return new Promise(function (resolve, reject) {
-		helpers.sh('git clone '
-				+ src
-				+ ' '
-				+ path.basename(dest)
-			, { cwd: path.dirname(dest) }
-			, function (error, stdout, stderr) {
-				if (error) {
-					reject(error)
-				} else {
-					resolve(stdout)
-				}
-			})
-	})
+	return helpers.sh('git clone '
+		+ src
+		+ ' '
+		+ path.basename(dest)
+	, { cwd: path.dirname(dest) })
 }
 
 exports.checkout = function (branch, repo) {
-	return new Promise(function (resolve, reject) {
-		helpers.sh('git checkout '
-				+ branch
-			, { cwd: repo }
-			, function (error, stdout, stderr) {
-				if (error) {
-					reject(error)
-				} else {
-					resolve(stdout)
-				}
-			})
-	})
+	return helpers.sh('git checkout '
+			+ branch
+		, { cwd: repo })
 }
 
 exports.pull = function (repo, branch) {
-	return new Promise(function (resolve, reject) {
-		helpers.sh('git pull origin '
-				+ branch
-			, { cwd: repo }
-			, function (error, stdout, stderr) {
-				if (error) {
-					reject(error)
-				} else {
-					resolve(stdout)
-				}
-			})
-	})
+	return helpers.sh('git pull origin '
+			+ branch
+		, { cwd: repo })
 }
 
 exports.fetch = function (repo) {
-	return new Promise(function (resolve, reject) {
-		helpers.sh('git fetch'
-			, { cwd: repo }
-			, function (error, stdout, stderr) {
-				if (error) {
-					reject(error)
-				} else {
-					resolve(stdout)
-				}
-			})
-	})
+	return helpers.sh('git fetch'
+	, { cwd: repo })
 }
 
 exports.cloneRelease = function (config) {
@@ -77,87 +41,41 @@ exports.cloneRelease = function (config) {
 }
 
 exports.commitRelease = function (config) {
-	return new Promise(function (resolve, reject) {
-		helpers.sh('git add .'
-			, { cwd: config.git.releaseRepo.absPath }
-			, function (error, stdout, stderr) {
-				if (error) {
-					reject(error)
-				} else {
-					helpers.sh("git commit -m 'new version'"
-						, { cwd: config.git.releaseRepo.absPath }
-						, function (error, stdout, stderr) {
-							if (error) {
-								reject(error)
-							} else {
-								resolve(exports.pushu(config.git.releaseRepo.absPath))
-							}
-						})			
-				}
-			})
-	})
+	return helpers.sh('git add .'
+			, { cwd: config.git.releaseRepo.absPath })
+		.then(function () {
+			return helpers.sh("git commit -m 'new version'"
+			, { cwd: config.git.releaseRepo.absPath })
+		})
+		.then(function () {
+			return exports.pushu(config.git.releaseRepo.absPath)
+		})
 }
 
 exports.newBranch = function (branch, repo) {
-	return new Promise(function (resolve, reject) {
-		helpers.sh('git checkout -b '
-				+ branch
-			, { cwd: repo }
-			, function (error, stdout, stderr) {
-				if (error) {
-					reject(error)
-				} else {
-					console.log("Need a minimum to commit")
-					writeFile(path.join(repo, "README.md")
-							, "Just something to push"
-							, 'utf8')
-						.then(function () {
-							return new Promise(function (resolve, reject) {
-								helpers.sh('git add .'
-									, { cwd: repo }
-									, function (error, stdout, stderr) {
-										if (error) {
-											reject(error)
-										} else {
-											resolve()
-										}
-									})
-							})
-						})
-						.then(function () {
-							return new Promise(function (resolve, reject) {
-								helpers.sh("git commit -m 'initial commit'"
-									, { cwd: repo }
-									, function (error, stdout, stderr) {
-										if (error) {
-											reject(error)
-										} else {
-											resolve()
-										}
-									})
-							})
-						})
-						.then(function () {
-							return exports.pushu(repo)
-						})
-						.catch(reject)
-				}
-			})
-	})
+	return helpers.sh('git checkout -b ' + branch
+			, { cwd: repo })
+		.then(function () {
+			return writeFile(path.join(repo, "README.md")
+			, "Just something to push for branch creation to be possible"
+			, 'utf8')
+		})
+		.then(function () {
+			return helpers.sh('git add .'
+				, { cwd: repo })
+		})
+		.then(function () {
+			return helpers.sh("git commit -m 'initial commit'"
+					, { cwd: repo })
+		})
+		.then(function () {
+			return exports.pushu(repo)
+		})
 }
 
 exports.pushu = function (repo) {
-	return new Promise(function (resolve, reject) {
-		helpers.sh('git push -u'
-			, { cwd: repo }
-			, function (error, stdout, stderr) {
-				if (error) {
-					reject(error)
-				} else {
-					resolve()
-				}
-			})
-	})
+	return helpers.sh('git push -u'
+	, { cwd: repo })
 }
 
 exports.checkoutRelease = function (config) {
