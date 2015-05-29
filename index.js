@@ -25,8 +25,8 @@ var https = require('https')
 	, helpers = require('./helpers')
 	, ShaHistory = require('./ShaHistory')
 	, shaHistory
-	, State = require('./state')
-	, ErrorManager = require('./error')
+	, State = require('./State')
+	, ErrorManager = require('./Error')
 	, error
 	, serverPkg = require('./package.json')
 	, configure = require('./config')
