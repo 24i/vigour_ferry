@@ -93,7 +93,7 @@ function Version (sha, config) {
 	})
 
 	self.getPkg = helpers.getter(function () {
-		log.info("Creating pkg")
+		log.info("Creating pkg", self.packagePath)
 		return read(self.packagePath, 'utf8')
 			.then(function (str) {
 				var parsed = JSON.parse(str)
