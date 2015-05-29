@@ -98,6 +98,8 @@ function Version (sha, config) {
 			.then(function (str) {
 				var parsed = JSON.parse(str)
 				parsed.sha = self.sha
+				console.log('a', self.config)
+				console.log('b', parsed.repository)
 				parsed.repository.branch = self.config.git.branch
 				if (self.config.git.branch === "dev") {
 					parsed.version = helpers.hNow()
