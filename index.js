@@ -49,6 +49,8 @@ module.exports = exports = function (opts) {
 
 	if (config.release) {
 		release()
+	} else if (config.server.ip) {
+		serve()
 	} else {
 		web = express()
 		github = express()
@@ -863,7 +865,7 @@ function syncAssets () {
 
 
 function release () {
-	getReleaseRepo()
+	return getReleaseRepo()
 		.then(function () {
 			return git.checkoutRelease(config)
 		})
@@ -876,5 +878,21 @@ function release () {
 		})
 		.catch(function (reason) {
 			log.error("oops", reason)
+		})
+}
+
+function serverFiles (server) {
+	log.info("serving files to ", server)
+}
+
+function serve () {
+	return sendFiles(config.server)
+		.then(function () {
+			log.info("Please log into" + config.server.ip
+				+ " as " + config.server.user
+				+ " and `./install.sh`")
+		})
+		.catch(function (reason) {
+			log.error('failing to serve()', reason)
 		})
 }

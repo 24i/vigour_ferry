@@ -25,6 +25,10 @@ var path = require('path')
 					{
 
 					}
+				, server:
+					{
+
+					}
 				}
 			}
 		}
@@ -43,6 +47,10 @@ var path = require('path')
 					{
 						
 					}
+				, server:
+					{
+
+					}
 				}
 			}
 		}
@@ -56,6 +64,12 @@ opts.merge(secretPkg)
 // Packer
 if (process.env.PACKER_RELEASE) {
 	env.vigour.packer.release = process.env.PACKER_RELEASE
+}
+if (process.env.PACKER_SERVER_IP) {
+	env.vigour.packer.server.ip = process.env.PACKER_SERVER_IP
+}
+if (process.env.PACKER_SERVER_USER) {
+	env.vigour.packer.server.user = process.env.PACKER_SERVER_USER
 }
 if (process.env.PACKER_SRC) {
 	env.vigour.packer.src = process.env.PACKER_SRC
@@ -136,6 +150,8 @@ program
 	.version(pkg.version)
 	.usage("[options]")
 	.option("-r, --release", "Commits assets declared in package to release branch (<this_branch>-release), creating it if needed")
+	.option("-s, --serverIP <IP>", "Deploys and launches a packer server for this app at provided IP")
+	.option("--serverUser <name>", "User to use when logging into IP specified in --serverIP")
 	.option("-p, --port <port>", "port packer should listen on")
 	.option("-h, --history <maxHistory>", "maximum number of versions of the app to keep in history")
 	.option("--validate", "validates package and exits")
@@ -173,6 +189,12 @@ program
 // Packer
 if (program.release) {
 	cliArgs.vigour.packer.release = program.release
+}
+if (program.serverIP) {
+	cliArgs.vigour.packer.server.ip = program.serverIP
+}
+if (program.serverUser) {
+	cliArgs.vigour.packer.server.user = program.serverUser
 }
 if (program.buildDir) {
 	cliArgs.vigour.packer.buildDir = program.buildDir
