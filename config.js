@@ -7,7 +7,7 @@ module.exports = exports = function (opts) {
 	var d =
 	{ retryAfter: 1
 	, minFreeSpace: 0.15
-	, assetRoot: __dirname + '/files'
+	, assetRoot: path.join(__dirname, 'files')
 	, buildDir: 'packerBuilt'
 	, shaDir: 'shas'
 	, maxHistory: 3
@@ -15,6 +15,7 @@ module.exports = exports = function (opts) {
 	, shaPlaceholder: "SHA"
 	, shaHistoryName: 'history.json'
 	, stateFileName: "state.json"
+	, cwd: process.cwd()
 	, git:
 		{ branch: 'master'
 		, url: 'git@github.com'
@@ -33,12 +34,25 @@ module.exports = exports = function (opts) {
 			, absPath: ""
 			}
 		}
+	, mail:
+		{
+
+		}
 	, slack:
 		{ pathPart: (opts.slack && opts.slack.id)
 			? '/services/' + opts.slack.id
 			: "absent"
 		}
-	, cwd: process.cwd()
+	, server:
+		{ ssh:
+			{
+
+			}
+		, ssl:
+			{
+
+			}
+		}
 	}
 	
 	defaults = new VObj(d)

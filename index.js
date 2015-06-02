@@ -881,18 +881,33 @@ function release () {
 		})
 }
 
-function serverFiles (server) {
-	log.info("serving files to ", server)
+function sendFiles () {
+	return helpers.sh("scp -i " + config.server.identity
+			+ " " + config.server.ssh.id
+			+ " " + config.server.ssh.key
+			+ " " + config.server.ssl.cert
+			+ " " + config.server.ssl.key
+			+ " " + path.join(__dirname, "install.sh")
+			+ " " + path.join(config.cwd, ".package.json")
+			+ " " + config.server.user
+			+ "@" + config.server.ip
+			+ ":" + config.server.remoteHome)
 }
 
 function serve () {
-	return sendFiles(config.server)
+	log.info("Server config", config.server)
+	return sendFiles()
 		.then(function () {
-			log.info("Please log into" + config.server.ip
-				+ " as " + config.server.user
-				+ " and `./install.sh`")
+			return helpers.sh("ssh -i " + config.server.identity
+					+ " " + config.server.user
+					+ "@" + config.server.ip
+					+ " " + '"' + "./install.sh" + " " + config.server.ssl.password + '"')
+		})
+		.then(function (stdout) {
+			console.log(stdout)
+			log.info('DONE')
 		})
 		.catch(function (reason) {
-			log.error('failing to serve()', reason)
+			log.error("UH OH", reason)
 		})
 }

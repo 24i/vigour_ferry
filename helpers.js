@@ -78,8 +78,15 @@ exports.hNow = function () {
 
 
 exports.sh = function (command, opts, cb) {
-	var p = new Promise(function (resolve, reject) {
-		console.log('Executing `', command, '`\n\tCWD:', opts.cwd )
+	var p
+	if (!opts) {
+		opts = { }
+	}
+	if (!opts.cwd) {
+		opts.cwd = __dirname	
+	}
+	p = new Promise(function (resolve, reject) {
+		console.log('Executing `', command, '`\n\tCWD:', opts.cwd)
 		proc.exec(command
 		, { cwd: opts.cwd }
 		, function (error, stderr, stdout) {

@@ -26,8 +26,14 @@ var path = require('path')
 
 					}
 				, server:
-					{
+					{ ssh:
+						{
 
+						}
+					, ssl:
+						{
+
+						}
 					}
 				}
 			}
@@ -48,8 +54,14 @@ var path = require('path')
 						
 					}
 				, server:
-					{
+					{ ssh:
+						{
 
+						}
+					, ssl:
+						{
+
+						}
 					}
 				}
 			}
@@ -68,8 +80,29 @@ if (process.env.PACKER_RELEASE) {
 if (process.env.PACKER_SERVER_IP) {
 	env.vigour.packer.server.ip = process.env.PACKER_SERVER_IP
 }
+if (process.env.PACKER_SERVER_IDENTITY) {
+	env.vigour.packer.server.identity = process.env.PACKER_SERVER_IDENTITY
+}
+if (process.env.PACKER_SERVER_SSH_ID) {
+	env.vigour.packer.server.ssh.id = process.env.PACKER_SERVER_SSH_ID
+}
+if (process.env.PACKER_SERVER_SSH_KEY) {
+	env.vigour.packer.server.ssh.key = process.env.PACKER_SERVER_SSH_KEY
+}
+if (process.env.PACKER_SERVER_SSL_CERT) {
+	env.vigour.packer.server.ssl.cert = process.env.PACKER_SERVER_SSL_CERT
+}
+if (process.env.PACKER_SERVER_SSL_KEY) {
+	env.vigour.packer.server.ssl.key = process.env.PACKER_SERVER_SSL_KEY
+}
+if (process.env.PACKER_SERVER_SSL_PASSWORD) {
+	env.vigour.packer.server.ssl.password = process.env.PACKER_SERVER_SSL_PASSWORD
+}
 if (process.env.PACKER_SERVER_USER) {
 	env.vigour.packer.server.user = process.env.PACKER_SERVER_USER
+}
+if (process.env.PACKER_SERVER_REMOTEHOME) {
+	env.vigour.packer.server.remoteHome = process.env.PACKER_SERVER_REMOTEHOME
 }
 if (process.env.PACKER_SRC) {
 	env.vigour.packer.src = process.env.PACKER_SRC
@@ -151,7 +184,14 @@ program
 	.usage("[options]")
 	.option("-r, --release", "Commits assets declared in package to release branch (<this_branch>-release), creating it if needed")
 	.option("-s, --serverIP <IP>", "Deploys and launches a packer server for this app at provided IP")
-	.option("--serverUser <name>", "User to use when logging into IP specified in --serverIP")
+	.option("-i, --identity <path>", "Path to identity file required to log into remote server")
+	.option("--ssh-id <id_rsa>", "Path to SSH private key to use on packer server")
+	.option("--ssh-key <id_rsa.pub>", "Path to SSH public key to use on packer server")
+	.option("--ssl-cert <path>", "Path to SSL certificate to use on packer server")
+	.option("--ssl-key <path>", "Path to private key of SSL certificate to use on packer server")
+	.option("--ssl-password <password>", "Password for SSL certificate to use on packer server")
+	.option("-u, --serverUser <name>", "User to use when logging into IP specified in --serverIP")
+	.option("--remote-home <path>", "Path to home directory on remote machine where packer server should be installed")
 	.option("-p, --port <port>", "port packer should listen on")
 	.option("-h, --history <maxHistory>", "maximum number of versions of the app to keep in history")
 	.option("--validate", "validates package and exits")
@@ -193,8 +233,29 @@ if (program.release) {
 if (program.serverIP) {
 	cliArgs.vigour.packer.server.ip = program.serverIP
 }
+if (program.serverIdentity) {
+	cliArgs.vigour.packer.server.identity = program.serverIdentity
+}
+if (program.sshId) {
+	cliArgs.vigour.packer.server.ssh.id = program.sshId
+}
+if (program.sshKey) {
+	cliArgs.vigour.packer.server.ssh.key = program.sshKey
+}
+if (program.sslCert) {
+	cliArgs.vigour.packer.server.ssl.cert = program.sslCert
+}
+if (program.sslKey) {
+	cliArgs.vigour.packer.server.ssl.key = program.sslKey
+}
+if (program.sslPassword) {
+	cliArgs.vigour.packer.server.ssl.password = program.sslPassword
+}
 if (program.serverUser) {
 	cliArgs.vigour.packer.server.user = program.serverUser
+}
+if (program.remoteHome) {
+	cliArgs.vigour.packer.server.remoteHome = program.remoteHome
 }
 if (program.buildDir) {
 	cliArgs.vigour.packer.buildDir = program.buildDir
