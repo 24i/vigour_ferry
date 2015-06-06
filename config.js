@@ -1,81 +1,246 @@
-var path = require('path')
-	, btoa = require('btoa')
-	, VObj = require('vigour-js/object')
-	, defaults
-
-module.exports = exports = function (opts) {
-	var d =
-	{ retryAfter: 1
-	, minFreeSpace: 0.15
-	, assetRoot: path.join(__dirname, 'files')
-	, buildDir: 'packerBuilt'
-	, shaDir: 'shas'
-	, maxHistory: 3
-	, port: 8000
-	, shaPlaceholder: "SHA"
-	, shaHistoryName: 'history.json'
-	, stateFileName: "state.json"
-	, cwd: process.cwd()
-	, git:
-		{ branch: 'master'
-		, url: 'git@github.com'
-		, port: 8443
-		, api:
-			{ hostname: 'api.github.com'
-			, headers:
-				{ "Accept": 'application/vnd.github.v3+json'
-				, "User-Agent": 'vigour-packer-server'
-				, "Authorization": "Basic "
-				}
-			}
-		, releaseRepo:
-			{ suffix: "-packer-release"
-			, name: ""
-			, absPath: ""
-			}
-		}
-	, mail:
-		{
-
-		}
-	, slack:
-		{ pathPart: (opts.slack && opts.slack.id)
-			? '/services/' + opts.slack.id
-			: "absent"
-		}
-	, server:
-		{ ssh:
-			{
-
-			}
-		, ssl:
-			{
-
-			}
-		}
-	}
-	
-	defaults = new VObj(d)
-
-	// console.log("defaults", defaults.raw)
-
-	defaults.merge(opts)
-
-	if (defaults.git
-		&& defaults.git.username
-		&& defaults.git.password)
-	{
-		defaults.git.api.headers.Authorization.val = "Basic "
-				+ btoa(defaults.git.username.val
-					+ ":"
-					+ defaults.git.password.val)
+var config = module.exports = exports = {}
+exports.items = {
+// Config files
+"vigour.packer.config":
+	{ d: null
+	, env: "PACKER_CONFIG"
+	, cli: "-c, --config <paths>"
+	, getter: "config"
+	, desc: "Comma-separated list of paths to config files\
+	 config priority: defaults > *files* > env > cli"
+	, isConfig: true
 	}
 
-	if (defaults.release && defaults.git.repo && defaults.git.releaseRepo.name.val === "") {
-		defaults.git.releaseRepo.name.val = defaults.git.repo.val + defaults.git.releaseRepo.suffix.val
+// Packer
+,	"vigour.packer.buildDir":
+	{ d: "packerBuilt"
+	, env: "PACKER_BUILD_DIR"
+	, cli: "--build-dir <name>"
+	, getter: "buildDir"
+	, desc: "Name to assign to build directory created within app"
+	}
+,	"vigour.packer.maxHistory":
+	{ d: 5
+	, env: "PACKER_MAX_HISTORY"
+	, cli: "-h, --history, --max-history <nb>"
+	, getter: "history"
+	, desc: "Maximum number of versions to serve"
+	}
+,	"vigour.packer.shaPlaceholder":
+	{ d: "SHA"
+	, env: "PACKER_SHA_PLACEHOLDER"
+	, cli: "--sha-placeholder <string>"
+	, getter: "shaPlaceholder"
+	, desc: "Placeholder for SHA in css files needing rebasing"
+	}
+,	"vigour.packer.port":
+	{ d: 8000
+	, env: "PACKER_PORT"
+	, cli: "-p, --port <port>"
+	, getter: "port"
+	, desc: "Port on which to listen for app clients"
 	}
 
-	defaults.git.releaseRepo.absPath.val = path.join(path.dirname(defaults.cwd.val), defaults.git.releaseRepo.name.val)
+// Mail
+, "vigour.packer.mail.fromAddress":
+	{ d: null
+	, env: "MAIL_FROM"
+	, cli: "--mail-from <email>"
+	, getter: "mailFrom"
+	, desc: "E-mail address to use in the 'from' field"
+	}
+,	"vigour.packer.mail.to":
+	{ d: null
+	, env: "MAIL_TO"
+	, cli: "--mail-to <email>"
+	, getter: "mailTo"
+	, desc: "Comma-separated list of e-mail addresses to contact"
+	}
+,	"vigour.packer.mail.username":
+	{ d: null
+	, env: "MAIL_USERNAME"
+	, cli: "--mail-username <name>"
+	, getter: "mailUsername"
+	, desc: "Username of e-mail account to authenticate as"
+	}
+,	"vigour.packer.mail.password":
+	{ d: null
+	, env: "MAIL_PASSWORD"
+	, cli: "--mail-password <password>"
+	, getter: "mailPassword"
+	, desc: "Password for account associated to vigour.packer.mail.username"
+	}
 
-	return defaults.raw
+// Slack
+, "vigour.packer.slack.id":
+	{ d: null
+	, env: "SLACK_ID"
+	, cli: "--slack-id <id>"
+	, getter: "slackId"
+	, desc: "String identifying the slack service to contact"
+	}
+,	"vigour.packer.slack.token":
+	{ d: null
+	, env: "SLACK_TOKEN"
+	, cli: "--slack-token <token>"
+	, getter: "slackToken"
+	, desc: "Token to use when authenticating with slack"
+	}
+
+// Git
+, "vigour.packer.git.owner":
+	{ d: null
+	, env: "GIT_OWNER"
+	, cli: "--git-owner <username>"
+	, getter: "gitOwner"
+	, desc: "Username for the GitHub account that owns the app"
+	}
+,	"vigour.packer.git.repo":
+	{ d: null
+	, env: "GIT_REPO"
+	, cli: "--git-repo <name>"
+	, getter: "gitRepo"
+	, desc: "App repository name"
+	}
+,	"vigour.packer.git.branch":
+	{ d: null
+	, env: "GIT_BRANCH"
+	, cli: "--git-branch <name>"
+	, getter: "gitBranch"
+	, desc: "Branch of app to serve"
+	}
+, "vigour.packer.git.username":
+	{ d: null
+	, env: "GIT_USERNAME"
+	, cli: "--git-username <name>"
+	, getter: "gitUsername"
+	, desc: "Username for the git account to clone with"
+	}
+,	"vigour.packer.git.password":
+	{ d: null
+	, env: "GIT_PASSWORD"
+	, cli: "--git-password <password>"
+	, getter: "gitPassword"
+	, desc: "Password for the account associated to vigour.packer.git.username"
+	}
+,	"vigour.packer.git.port":
+	{ d: 8443
+	, env: "GIT_PORT"
+	, cli: "--git-port <portNumber>"
+	, getter: "gitPort"
+	, desc: "Port on which to listen for GitHub WebHooks"
+	}
+,	"vigour.packer.git.url":
+	{ d: "git@github.com"
+	, env: "GIT_URL"
+	, cli: "--git-hub <user@domain>"
+	, getter: "gitHub"
+	, desc: "git@github.com"
+	}
+,	"vigour.packer.git.api.hostname":
+	{ d: "api.github.com"
+	, env: "GIT_API_HOST"
+	, cli: "--git-api-host <apiDomain>"
+	, getter: "gitApiHost"
+	, desc: "api.github.com"
+	}
+,	"vigour.packer.git.api.headers.Accept":
+	{ d: "application/vnd.github.v3+json"
+	, env: "GIT_ACCEPT"
+	, cli: "--git-accept <acceptHeader>"
+	, getter: "gitAccept"
+	, desc: "application/vnd.github.v3+json"
+	}
+,	"vigour.packer.git.api.headers.User-Agent":
+	{ d: "vigour-packer-server"
+	, env: "GIT_UA"
+	, cli: "--git-ua <userAgent>"
+	, getter: "gitUa"
+	, desc: "User agent string packer should use when making requests to GitHub"
+	}
+
+// Local
+,	"vigour.packer.src":
+	{ d: null
+	, env: "PACKER_SRC"
+	, cli: "--src <path>"
+	, getter: "src"
+	, desc: "Absolute path to app"
+	}
+
+// Release 
+,	"vigour.packer.release":
+	{ d: false
+	, env: "PACKER_RELEASE"
+	, cli: "-r, --release"
+	, getter: "release"
+	, desc: "Commits assets declared in app's package.json\
+	 to sepcified branch of release repo\
+	 (<this_repo>-packer-release), creating it if needed"
+	}
+
+// Install / Launch
+,	"vigour.packer.server.ip":
+	{ d: null
+	, env: "PACKER_SERVER_IP"
+	, cli: "--ip <ip>"
+	, getter: "ip"
+	, desc: "Deploys and launches a packer server for this app at provided IP"
+	}
+,	"vigour.packer.server.identity":
+	{ d: null
+	, env: "PACKER_SERVER_IDENTITY"
+	, cli: "-i, --identity <path>"
+	, getter: "identity"
+	, desc: "Path to identity file to use when connecting to vigour.package.server.ip"
+	}
+,	"vigour.packer.server.ssh.id":
+	{ d: null
+	, env: "PACKER_SERVER_SSH_ID"
+	, cli: "--ssh-id <id_rsa>"
+	, getter: "sshId"
+	, desc: "Path to SSH private key"
+	}
+,	"vigour.packer.server.ssh.key":
+	{ d: null
+	, env: "PACKER_SERVER_SSH_KEY"
+	, cli: "--ssh-key <id_rsa.pub>"
+	, getter: "sshKey"
+	, desc: "Path to SSH public key"
+	}
+,	"vigour.packer.server.ssl.cert":
+	{ d: null
+	, env: "PACKER_SERVER_SSL_CERT"
+	, cli: "--ssl-cert <path>"
+	, getter: "sslCert"
+	, desc: "Path to SSL certificate"
+	}
+,	"vigour.packer.server.ssl.key":
+	{ d: null
+	, env: "PACKER_SERVER_SSL_KEY"
+	, cli: "--ssl-key <path>"
+	, getter: "sslKey"
+	, desc: "Path to private key of SSL certificate"
+	}
+,	"vigour.packer.server.ssl.password":
+	{ d: null
+	, env: "PACKER_SERVER_SSL_PASSWORD"
+	, cli: "--ssl-password <password>"
+	, getter: "sslPassword"
+	, desc: "Password for SSL certificate"
+	}
+,	"vigour.packer.server.user":
+	{ d: null
+	, env: "PACKER_SERVER_USER"
+	, cli: "-u, --server-user <name>"
+	, getter: "serverUser"
+	, desc: "User to authenticate as on vigour.packer.server.ip"
+	}
+,	"vigour.packer.server.remoteHome":
+	{ d: null
+	, env: "PACKER_SERVER_REMOTEHOME"
+	, cli: "--remote-home <path>"
+	, getter: "remoteHome"
+	, desc: "Path to home directory on remote machine where packer server should be installed"
+	}
 }

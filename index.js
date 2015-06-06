@@ -29,7 +29,7 @@ var https = require('https')
 	, ErrorManager = require('./Error')
 	, error
 	, serverPkg = require('./package.json')
-	, configure = require('./config')
+	, newConfig = require('./newConfig')
 	, git = require('./git')
 	, config
 	, state
@@ -42,10 +42,33 @@ var https = require('https')
 	, latestNewSha
 	, r
 
+function validateOpts (opts) {
+	if (!opts.vigour.packer.release
+		&& !opts.vigour.packer.src
+		&& (
+			!opts.vigour.packer.git.owner
+			|| !opts.vigour.packer.git.repo
+			|| !opts.vigour.packer.git.username)
+		) {
+		throw new Error("Invalid options")
+	}
+	if (!opts.vigour.packer.slack.id
+		|| !opts.vigour.packer.slack.token) {
+		log.warn("No Slack")
+	}
+	if (!opts.vigour.packer.mail.fromAddress
+		|| !opts.vigour.packer.mail.to
+		|| !opts.vigour.packer.mail.username
+		|| !opts.vigour.packer.mail.password) {
+		log.warn("No emails")
+	}
+}
+
 module.exports = exports = function (opts) {
 	var self = this
 
-	config = configure(opts.vigour.packer.raw)
+	validateOpts(opts)
+	config = opts.vigour.packer
 
 	if (config.release) {
 		release()
@@ -892,20 +915,27 @@ function sendFiles () {
 			+ " " + config.server.user
 			+ "@" + config.server.ip
 			+ ":" + config.server.remoteHome)
+		.then(function (stdout) {
+			console.log(stdout)
+		})
+}
+
+function install () {
+	return helpers.sh("ssh -i " + config.server.identity
+			+ " " + config.server.user
+			+ "@" + config.server.ip
+			+ " " + "\"" + "screen -d -m ./install.sh" + " '" + config.server.ssl.password + "'\"")
+		.then(function (stdout) {
+			console.log(stdout)
+		})
 }
 
 function serve () {
 	log.info("Server config", config.server)
 	return sendFiles()
+		.then(install)
 		.then(function () {
-			return helpers.sh("ssh -i " + config.server.identity
-					+ " " + config.server.user
-					+ "@" + config.server.ip
-					+ " " + '"' + "./install.sh" + " " + config.server.ssl.password + '"')
-		})
-		.then(function (stdout) {
-			console.log(stdout)
-			log.info('DONE')
+			log.info("DONE")
 		})
 		.catch(function (reason) {
 			log.error("UH OH", reason)
