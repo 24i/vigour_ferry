@@ -3,7 +3,7 @@ var path = require('path')
   , fs = require('graceful-fs')
   , log = require('npmlog')
   , helpers = require('./helpers')
-  , ErrorManager = require('./Error')
+  , ErrorManager = require('./ErrorM')
   , read = Promise.denodeify(fs.readFile)
   , write = Promise.denodeify(fs.writeFile)
   , _instance
@@ -109,7 +109,7 @@ State.prototype.warnDev = function (msg, quiet) {
           })
       }
       else {
-        log.info("Already warned once since the last successful goLive")
+        log.info("Already warned once since the last successful goLive", msg)
       }
     })
 }

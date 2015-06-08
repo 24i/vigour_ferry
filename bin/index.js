@@ -6,7 +6,7 @@ var path = require('path')
 	, fs = require('vigour-fs')
 	, VObj = require('vigour-js/object')
 	, flatten = require('vigour-js/util/flatten')
-	, config = require("../newConfig")
+	, config = require("../config")
 	, pkg = require('../package.json')
 	, packer = require('..')
 	, readFile = Promise.denodeify(fs.readFile)
@@ -38,7 +38,6 @@ for (key in config.items) {
 
 	defaultEntry = config.items[key].d
 	if (defaultEntry) {
-		// console.log("d", key, defaultEntry)
 		set(defaults, key, defaultEntry)
 		isConfig && addConfig(key, defaultEntry)
 	}
@@ -47,7 +46,6 @@ for (key in config.items) {
 	if (envEntry) {
 		value = process.env[envEntry]
 		if (value) {
-			// console.log('env', key, value)
 			set(env, key, value, "env clobbers")
 			isConfig && addConfig(key, value)
 		}
@@ -70,7 +68,6 @@ for (key in config.items) {
 		if (getter) {
 			value = program[getter]
 			if (value) {
-				// console.log('cli', key, value)
 				set(cli, key, value, "cli clobbers")
 				isConfig && addConfig(key, value)
 			}	
@@ -80,15 +77,13 @@ for (key in config.items) {
 	}
 }
 
-function addConfig (k, v) {
-	lastKeySeen = k
-	files = files.concat(v
-		.split(","))
+if (lastKeySeen) {
+	set(finale, lastKeySeen, files.join(","))	
 }
-set(finale, lastKeySeen, files.join(","))
+
 files.reduce(function (prev, curr, indx, arry) {
 	return prev.then(function (p) {
-		return readFile(curr, 'utf8')
+		return readFile(path.join(process.cwd(), curr), 'utf8')
 			.catch(function (reason) {
 				console.error("Can't read file", curr)
 			})
@@ -105,16 +100,10 @@ files.reduce(function (prev, curr, indx, arry) {
 		var flat
 			, key
 		opts.merge(defaults)
-		// console.log("defaults", defaults)
 		opts.merge(fileConf.raw)
-		// console.log("fileConf.raw", fileConf.raw)
 		opts.merge(env)
-		// console.log("env", env)
 		opts.merge(cli)
-		// console.log("cli", cli)
 		opts.merge(finale)
-		// console.log("finale", finale)
-		// console.log('CONFIG', opts.raw)
 		flat = flatten(opts.raw, ".")
 		for (key in tags) {
 			console.log(tags[key], key, flat[key])
@@ -122,7 +111,9 @@ files.reduce(function (prev, curr, indx, arry) {
 
 		packer(opts.raw)
 	})
-	.catch(console.error)
+	.catch(function (reason) {
+		console.error("Oops", reason, reason.stack)
+	})
 
 function set (o, k, v, tag) {
 	var parts = k.split(".")
@@ -139,4 +130,10 @@ function set (o, k, v, tag) {
 		ref = ref[parts[i]]
 	}
 	ref[parts[i]] = v
+}
+
+function addConfig (k, v) {
+	lastKeySeen = k
+	files = files.concat(v
+		.split(","))
 }

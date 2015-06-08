@@ -47,7 +47,6 @@ function Version (sha, config) {
 		, self.config.buildDir
 		, 'manifest.appcache')
 	self.getManifest = helpers.getter(function () {
-		log.info("Creating manifest")
 		return self.getPkg()
 			.then(function (pkg) {
 				return self.makeManifest(pkg)
@@ -70,7 +69,6 @@ function Version (sha, config) {
 	})
 
 	self.getAppCacheManifest = helpers.getter(function () {
-		log.info("Creating app cache manifest")
 		return self.getPkg()
 			.then(function (pkg) {
 				return self.makeAppCacheManifest(pkg)
@@ -93,7 +91,6 @@ function Version (sha, config) {
 	})
 
 	self.getPkg = helpers.getter(function () {
-		log.info("Creating pkg from", self.packagePath)
 		return read(self.packagePath, 'utf8')
 			.then(function (str) {
 				var parsed = JSON.parse(str)
@@ -135,7 +132,6 @@ function Version (sha, config) {
 
 Version.prototype.prep = function () {
 	var self = this
-	log.info("Preparing", self.sha)
 	return self.get()
 		.catch(state.log("Can't get version"))
 		.then(function () {
@@ -148,7 +144,7 @@ Version.prototype.prep = function () {
 		.catch(state.log("Version.getManifest() fails"))
 }
 
-Version.prototype.getAsset = function (file, params, shaRequest, quiet) {
+Version.prototype.getAsset = function (file, params, shaRequest) {
 	var self = this
 	return self.getPkg()
 		.catch(state.log("Can't get pkg"))
@@ -161,17 +157,11 @@ Version.prototype.getAsset = function (file, params, shaRequest, quiet) {
 			if (file === "") {
 				file = pkg.vigour.packer.web
 			}
-			if (!quiet) {
-				log.info("Getting ", file)
-			}
 			transforms = (file in allTransforms)
 				? allTransforms[file]
 				: false
 
 			if (transforms) {
-				if (!quiet) {
-					log.info("Getting transform", file, transforms, params)
-				}
 				return self.getTransformed(file
 					, transforms
 					, params
@@ -271,17 +261,12 @@ Version.prototype.replayTransforms = function () {
 					arr.reduce(function (previous, current, index, array) {
 							return previous.then(function () {
 								return self.getAsset(current.file
-									, current.params
-									, undefined
-									, true)
+									, current.params)
 										.catch(state.log("Can't replay transform"))
 							})
 						}
 						, Promise.resolve())
 							.catch(state.log("Can't replay transforms"))
-							.then(function () {
-								log.info("Done replaying transforms")
-							})
 				})
 		})
 }
@@ -404,7 +389,6 @@ Version.prototype.makeManifest = function (pkg) {
 Version.prototype.archive = function () {
 	var self = this
 		, mustErase = false
-	log.info('Archiving sha')
 	return shaHistory.get()
 		.catch(state.log("Can't archive sha"))
 		.then(function (history) {
@@ -528,7 +512,6 @@ Version.prototype.clone = function () {
 
 Version.prototype.cleanup = function () {
 	var self = this
-	log.info("Removing `.git` directory from", self.sha)
 	return remove(path.join(self.root, '.git'))
 }
 

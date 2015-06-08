@@ -12,9 +12,9 @@ var fs = require('graceful-fs')
   , machineIP
   , ipRequested = false
 
-module.exports = exports = Error
+module.exports = exports = ErrorM
 
-function Error (opts) {
+function ErrorM (opts) {
   var self = this
   self.opts = opts
   self.mailOptions = {}
@@ -35,16 +35,14 @@ function Error (opts) {
           machineIP = ip
 
           self.mailOptions.subject = 'Warning from ' + ip
-          if (opts.git) {
-            self.mailOptions.subject += ' (' + opts.git.branch + ')'
-          }
+          self.mailOptions.subject += ' (' + opts.git.branch + ')'
         })
       }).on('error', function (err) {
         log.error("Error requesting IP", err)
       })
   }
-  if (opts.mail) {
-    self.mailOptions.from = 'MTV PLAY PACKER SERVER <' + opts.mail.fromAddress + '>'
+  try {
+    self.mailOptions.from = 'Packer Server <' + opts.mail.fromAddress + '>'
     self.mailOptions.to = opts.mail.to // comma-separated list of receivers
     if (opts.git) {
       self.mailOptions.subject = 'Warning from ' + opts.git.branch
@@ -57,10 +55,12 @@ function Error (opts) {
         pass: opts.mail.password
       }
     })
+  } catch (e) {
+    log.warn("Mail misconfigured, check fromAddress, to, username, password", e, e.stack)
   }
 }
 
-Error.prototype.print = function (msg, reason) {
+ErrorM.prototype.print = function (msg, reason) {
   log.error(msg)
   if (!reason.printed) {
     log.error('reason', reason)
@@ -68,7 +68,7 @@ Error.prototype.print = function (msg, reason) {
   }
 }
 
-Error.prototype.warnDev = function (msg) {
+ErrorM.prototype.warnDev = function (msg) {
   var self = this
   if (msg.toString() === '[object Object]') {
     try {
@@ -78,36 +78,37 @@ Error.prototype.warnDev = function (msg) {
     }
   }
   return Promise.all([
-    new Promise(function (resolve, reject) {
+    (new Promise(function (resolve, reject) {
       if (msg) {
         self.mailOptions.text = msg
       }
 
-      if (!self.opts.mail) {
-        log.warn("E-MAIL warning not configured")
-        resolve()
-      } else {
-        log.warn("SENDING E-MAIL"
-          + "\n\n"
-          + JSON.stringify(self.mailOptions, null, 2)
-          + "\n\n")
-        self.transporter.sendMail(self.mailOptions, function (err, info){
-          if (err) {
-           log.error(err)
-           reject(err)
-          } else {
-           log.info('email sent: ' + info.response)
-           resolve()
-          }
-        })
-      }
-    })
-    , new Promise(function (resolve, reject) {
-      if (!self.opts.slack || !self.opts.slack.pathPart || !self.opts.slack.token) {
-        log.warn("SLACK warning not properly configured")
-        log.warn('options', self.opts.slack)
-        resolve()
-      } else {
+      // log.warn("\nSending email: "
+      //   , JSON.stringify(self.mailOptions, null, 2)
+      //   , "\n\n")
+
+      self.transporter.sendMail(self.mailOptions, function (err, info){
+        if (err) {
+         if (err.responseCode === 454) {
+          log.warn("Can't log into mail service")
+          err.TODO = "Check mail username and password"
+          return reject(err)
+         } else {
+          log.warn("Can't send mail")
+          err.TODO = "Check mail fromAddress and to"
+          return reject(err)
+         }
+        } else {
+         log.info('email sent: ' + info.response)
+         return resolve()
+        }
+      })
+    }))
+      .catch(function (reason) {
+        log.error("Can't send mail", reason)
+      })
+    , (new Promise(function (resolve, reject) {
+      try {
         var postData = makePayload(machineIP, self.opts.git.branch, msg)
           , options = {
             hostname: 'hooks.slack.com'
@@ -119,31 +120,42 @@ Error.prototype.warnDev = function (msg) {
               'Content-Length': postData.length
             }
           }
-          , req = https.request(options, function (res) {
-            var response = ""
-            res.on('error', reject)
-            res.on('data', function (chunk) {
-              response += chunk.toString()
-            })
-            res.on('end', function () {
-              if (response === 'ok') {
-                log.info('slack message sent')
-                resolve()
-              } else {
-                reject(response)
-              }
-            })
-          })
-        log.warn("SENDING SLACK MESSAGE"
-          + "\n\n"
-          + JSON.stringify(options, null, 2)
-          + "\n\n"
-          + postData
-          + "\n\n")
-        req.on('error', reject)
-        req.write(postData)
-        req.end()
+          , req
+      } catch (e) {
+        log.warn("Slack misconfigured")
+        e.TODO = "Check Slack id and token"
+        return reject(e)
       }
+
+      // log.warn("Sending slack message:"
+      //   , JSON.stringify(options, null, 2)
+      //   , "\n\n"
+      //   , postData
+      //   , "\n\n")
+
+      req = https.request(options, function (res) {
+        var response = ""
+        res.on('error', reject)
+        res.on('data', function (chunk) {
+          response += chunk.toString()
+        })
+        res.on('end', function () {
+          var err
+          if (response === 'ok') {
+            log.info('slack message sent')
+            resolve()
+          } else {
+            err = new Error("Invalid Login")
+            err.TODO = "Check slack id and token"
+            reject(err)
+          }
+        })
+      })
+      req.on('error', reject)
+      req.write(postData)
+      req.end()
+    })).catch(function (reason) {
+      log.error("Can't send Slack message", reason)
     })
   ])
 }

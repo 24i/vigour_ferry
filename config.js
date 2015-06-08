@@ -1,4 +1,5 @@
-var config = module.exports = exports = {}
+var path = require('path')
+	, config = module.exports = exports = {}
 exports.items = {
 // Config files
 "vigour.packer.config":
@@ -40,6 +41,48 @@ exports.items = {
 	, getter: "port"
 	, desc: "Port on which to listen for app clients"
 	}
+, "vigour.packer.retryAfter":
+	{ d: 1
+	, env: "PACKER_RETRY_AFTER"
+	, cli: "--retry-after <nbSeconds>"
+	, getter: "retryAfter"
+	, desc: "OBSOLETE"
+	}
+, "vigour.packer.minFreeSpace":
+	{ d: 0.15
+	, env: "PACKER_MIN_SPACE"
+	, cli: "--min-free-space <proportion>"
+	, getter: "minFreeSpace"
+	, desc: "Free space threshold for notifying dev"
+	}
+, "vigour.packer.assetRoot":
+	{ d: path.join(__dirname, 'files')
+	, env: "PACKER_ASSET_ROOT"
+	, cli: "--asset-root <path>"
+	, getter: "assetRoot"
+	, desc: "Directory holding dynamically created files"
+	}
+, "vigour.packer.shaDir":
+	{ d: 'shas'
+	, env: "PACKER_SHA_DIR"
+	, cli: "--sha-dir <path>"
+	, getter: "shaDir"
+	, desc: "Directory holding app clones"
+	}
+, "vigour.packer.shaHistoryName":
+	{ d: "history.json"
+	, env: "PACKER_SHA_HISTORY_NAME"
+	, cli: "--sha-history-name <name>"
+	, getter: "shaHistoryName"
+	, desc: "Sha history file name"
+	}
+, "vigour.packer.stateFileName":
+ { d: "state.json"
+ , env: "PACKER_STATE_FILENAME"
+ , cli: "--state-filename <name>"
+ , getter: "stateFilename"
+ , desc: "Name of dynamic file containing state"
+ }
 
 // Mail
 , "vigour.packer.mail.fromAddress":
@@ -84,7 +127,7 @@ exports.items = {
 	, env: "SLACK_TOKEN"
 	, cli: "--slack-token <token>"
 	, getter: "slackToken"
-	, desc: "Token to use when authenticating with slack"
+	, desc: "Token to use when authenticating slack requests"
 	}
 
 // Git
@@ -159,6 +202,17 @@ exports.items = {
 	, desc: "User agent string packer should use when making requests to GitHub"
 	}
 
+// Cleanup
+, "vigour.packer.cleanup":
+	{ d: null
+	, env: "PACKER_CLEANUP"
+	, cli: "-x, --cleanup"
+	, getter: "cleanup"
+	, desc: "Removes all downloaded and created assets,\
+	 state.json, and history.json\
+	 transformHistory.json is conserved"
+	}
+
 // Local
 ,	"vigour.packer.src":
 	{ d: null
@@ -178,8 +232,36 @@ exports.items = {
 	 to sepcified branch of release repo\
 	 (<this_repo>-packer-release), creating it if needed"
 	}
+, "vigour.packer.releaseRepo.suffix":
+	{ d: "-packer-release"
+	, env: "PACKER_RELEASE_SUFFIX"
+	, cli: "--release-suffix <string>"
+	, getter: "releaseSuffix"
+	, desc: "Suffix for release repo"
+	}
+, "vigour.packer.releaseRepo.name":
+	{ d: null
+	, env: "PACKER_RELEASE_NAME"
+	, cli: "--release-name <name>"
+	, getter: "releaseName"
+	, desc: "Name of release repo"
+	}
+, "vigour.packer.releaseRepo.absPath":
+	{ d: null
+	, env: "PACKER_RELEASE_ABS_PATH"
+	, cli: "--release-abs-path <path>"
+	, getter: "releaseAbsPath"
+	, desc: "Path to release repo"
+	}
 
 // Install / Launch
+, "vigour.packer.delpoy":
+	{ d: false
+	, env: "PACKER_DEPLOY"
+	, cli: "--deploy"
+	, getter: "deploy"
+	, desc: "Install packer on remote machine"
+	}
 ,	"vigour.packer.server.ip":
 	{ d: null
 	, env: "PACKER_SERVER_IP"

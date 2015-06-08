@@ -2,6 +2,7 @@ var https = require('https')
 	, path = require('path')
 	, repl = require('repl')
 	, url = require('url')
+	, btoa = require('btoa')
 	, fs = require('vigour-fs')
 	
 	, express = require('express')
@@ -18,6 +19,8 @@ var https = require('https')
 	, flatten = require('vigour-js/util/flatten')
 	, ajax = require('vigour-js/browser/network/ajax')
 	, readFile = Promise.denodeify(fs.readFile)
+	, remove = Promise.denodeify(fs.remove)
+	, readdir = Promise.denodeify(fs.readdir)
 	, cp = Promise.denodeify(fs.cp)
 	
 	, Version = require('./Version')
@@ -26,10 +29,9 @@ var https = require('https')
 	, ShaHistory = require('./ShaHistory')
 	, shaHistory
 	, State = require('./State')
-	, ErrorManager = require('./Error')
+	, ErrorManager = require('./ErrorM')
 	, error
 	, serverPkg = require('./package.json')
-	, newConfig = require('./newConfig')
 	, git = require('./git')
 	, config
 	, state
@@ -42,108 +44,106 @@ var https = require('https')
 	, latestNewSha
 	, r
 
-function validateOpts (opts) {
-	if (!opts.vigour.packer.release
-		&& !opts.vigour.packer.src
-		&& (
-			!opts.vigour.packer.git.owner
-			|| !opts.vigour.packer.git.repo
-			|| !opts.vigour.packer.git.username)
-		) {
-		throw new Error("Invalid options")
-	}
-	if (!opts.vigour.packer.slack.id
-		|| !opts.vigour.packer.slack.token) {
-		log.warn("No Slack")
-	}
-	if (!opts.vigour.packer.mail.fromAddress
-		|| !opts.vigour.packer.mail.to
-		|| !opts.vigour.packer.mail.username
-		|| !opts.vigour.packer.mail.password) {
-		log.warn("No emails")
-	}
-}
-
 module.exports = exports = function (opts) {
 	var self = this
 
-	validateOpts(opts)
 	config = opts.vigour.packer
 
-	if (config.release) {
-		release()
-	} else if (config.server.ip) {
-		serve()
-	} else {
-		web = express()
-		github = express()
-			
-		
-		error = new ErrorManager(config)
-		state = new State(config)
-		shaHistory = new ShaHistory(config)
-		web.use(compress())
-		web.use(logRequest)
-		web.use(getUA)
-		web.get('/'
-			, getSha
-			, fbMeta
-			, addHeaders
-			, serveIndex
-			, serveCode(500))
-		web.post('/status'
-			, bodyParser.urlencoded({
-				extended: true
-			})
-			, serveStatus
-			, serveCode(500))
-		web.get('/manifest.json'
-			, serveManifest
-			, addHeaders
-			, serveFile
-			, warnDevMid("Can't serve manifest.json")
-			, serveCode(500))
-		web.get('/favicon.ico'
-			, getSha
-			, prepFavicon
-			, serveFile
-			// , warnDevMid("Can't serve favicon.ico")
-			, serveCode(500))
-		web.get('/robots.txt'
-			, prepRobots
-			, serveFile
-			// , warnDevMid("Can't serve robots.txt")
-			, serveCode(500))
-		web.get('/geo'
-			, prepGeo
-			, serveFile
-			, warnDevMid("Can't serve geo")
-			, serveCode(500))
-		web.get('/native/:sha/*'
-			, prepShaRequest
-			, getSha
-			, fbMeta
-			, getAsset
-			, addHeaders
-			, serveFile
-			, serveCode(404))
-		web.get('*'
-			, getSha
-			, fbMeta
-			, getAsset
-			, addHeaders
-			, serveFile
-			, notfound
-			, serveCode(500))
-
-		web.use(serveCode(400))
-
-		github.post('/push', handleHookshot)
-		github.use(serveCode(404))
-
-		init()
-			.catch(state.log("Can't init", true))
+	if (config.cleanup) {
+		return cleanup()
+	} else if (config.release) {
+		config.git.releaseRepo.name = config.git.repo
+			+ config.git.releaseRepo.suffix
+		config.git.releaseRepo.absPath = path.join(
+			path.dirname(config.cwd)
+			, config.git.releaseRepo.name)
+		return release()
+	} else if (config.deploy) {
+		return serve()
+	} else if (!config.src) {
+		config.git.api.headers.Authorization = "Basic "
+			+ btoa(config.git.username
+				+ ":"
+				+ config.git.password)
 	}
+	
+	try {
+		config.slack.pathPart = "/services/"
+			+ config.slack.id
+	} catch (e) {
+		// log.warn("Slack config invalid", e, e.stack)
+	}
+
+	log.info("CONFIG", JSON.stringify(config, null, 2))
+
+	web = express()
+	github = express()
+		
+	
+	error = new ErrorManager(config)
+	state = new State(config)
+	shaHistory = new ShaHistory(config)
+	web.use(compress())
+	// web.use(logRequest)
+	web.use(getUA)
+	web.get('/'
+		, getSha
+		, fbMeta
+		, addHeaders
+		, serveIndex
+		, serveCode(500))
+	web.post('/status'
+		, bodyParser.urlencoded({
+			extended: true
+		})
+		, serveStatus
+		, serveCode(500))
+	web.get('/manifest.json'
+		, serveManifest
+		, addHeaders
+		, serveFile
+		, warnDevMid("Can't serve manifest.json")
+		, serveCode(500))
+	web.get('/favicon.ico'
+		, getSha
+		, prepFavicon
+		, serveFile
+		// , warnDevMid("Can't serve favicon.ico")
+		, serveCode(500))
+	web.get('/robots.txt'
+		, prepRobots
+		, serveFile
+		// , warnDevMid("Can't serve robots.txt")
+		, serveCode(500))
+	web.get('/geo'
+		, prepGeo
+		, serveFile
+		, warnDevMid("Can't serve geo")
+		, serveCode(500))
+	web.get('/native/:sha/*'
+		, prepShaRequest
+		, getSha
+		, fbMeta
+		, getAsset
+		, addHeaders
+		, serveFile
+		, serveCode(404))
+	web.get('*'
+		, getSha
+		, fbMeta
+		, getAsset
+		, addHeaders
+		, serveFile
+		, notfound
+		, serveCode(500))
+
+	web.use(serveCode(400))
+
+	github.post('/push', handleHookshot)
+	github.use(serveCode(404))
+
+	init()
+		.catch(state.log("Can't init", true))
 }
 
 function warnDevMid (msg) {
@@ -156,7 +156,15 @@ function warnDevMid (msg) {
 
 
 function serveStatus (req, res, next) {
-	if (req.body.token === config.slack.token) {
+	var err
+	log.info("Heard request for status")
+
+	if (!config.slack.token) {
+		err = new Error("Slack misconfigured")
+		err.TODO = "Check slack token"
+		state.log("Won't send status", undefined, true)(err)
+		res.status(401).end()
+	} else if (req.body.token === config.slack.token) {
 		if (req.body.text === 'status' || ~req.body.text.indexOf(config.git.branch)) {
 			diskspace.check('/', function (err, total, free, status) {
 				var du
@@ -180,6 +188,7 @@ function serveStatus (req, res, next) {
 								text: text
 								, username: error.instance_ip
 							}, null, 2)
+							log.info("Responding", reply)
 							res.end(reply)
 						} catch (e) {
 							state.log("Can't stringify or send status", true)(e)
@@ -204,33 +213,19 @@ function init () {
 		.catch(state.log("Can't get latest SHA", true))
 		.catch(wrongBranch)
 		.then(offerSha)
-		.catch(fixCatch)
+		.catch(state.log("Can't offer SHA"))
 		.then(acceptRequests)
 		.catch(state.log("Can't accept requests", true))
 		.then(acceptHookshots)
 		.catch(state.log("Can't accept hookshots", true))
 }
 
-// startRepl()
-
-function fix (reason) {
-	return shaHistory.removeLatest()
-		.then(Version.prototype.removeSha
-			, state.log("Can't remove latest SHA", false, true))
-		.then(getLatestSha)
-		.catch(state.log("Can't get latest SHA after removing it", true))
-		.catch(wrongBranch)
-		.then(offerSha)
-}
-
 function wrongBranch (reason) {
 	if (reason.message === 'Not Found') {
 		throw new Error("Branch not found")
+	} else {
+		throw reason
 	}
-}
-
-function fixCatch (reason) {
-	return fix(reason)
 }
 
 function getLatestSha () {
@@ -239,21 +234,20 @@ function getLatestSha () {
 			, req
 		if (config.src) {
 			resolve('_local')
-		} else if (config.git.api.hostname
-				&& config.git.owner
-				&& config.git.repo
-				&& config.git.branch
-				&& config.git.api.headers
-				&& config.git.username
-				&& config.git.password) {
-			options = {
-				hostname: config.git.api.hostname
-				, path: path.join('/repos'
-					, config.git.owner
-					, config.git.repo
-					, 'commits'
-					, config.git.branch)
-				, headers: config.git.api.headers
+		} else {
+			try {
+				options = {
+					hostname: config.git.api.hostname
+					, path: path.join('/repos'
+						, config.git.owner
+						, config.git.repo
+						, 'commits'
+						, config.git.branch)
+					, headers: config.git.api.headers
+				}
+			} catch (e) {
+				log.error("Git misconfigured, check owner, repo and branch")
+				return reject(new Error("Invalid config"))
 			}
 			req = https.request(options
 				, function (res) {
@@ -262,20 +256,25 @@ function getLatestSha () {
 						err.options = options
 						reject(err)
 					})
-					concatenate = concat(function (data) {
-						var parsed
-						try {
-							parsed = JSON.parse(data)
-						} catch (e) {
-							reject(e)
-						}
-						if (parsed.sha) {
-							resolve(parsed.sha)	
-						} else {
-							reject(parsed)
-						}
-					})
-					res.pipe(concatenate)
+					if (res.statusCode === 401) {
+						log.error("Git unauthorized, check username and password")
+						reject(new Error("Invalid config"))
+					} else {
+						concatenate = concat(function (data) {
+							var parsed
+							try {
+								parsed = JSON.parse(data)
+							} catch (e) {
+								reject(e)
+							}
+							if (parsed.sha) {
+								resolve(parsed.sha)	
+							} else {
+								reject(parsed)
+							}
+						})
+						res.pipe(concatenate)	
+					}
 				})
 			log.info(helpers.hNow() + " Asking Github for latest commit on branch", config.git.branch)
 			req.on('error', function (err) {
@@ -283,8 +282,6 @@ function getLatestSha () {
 				reject(err)
 			})
 			req.end()
-		} else {
-			throw new Error("Missing config.src or config.git.*")
 		}
 	})
 }
@@ -319,7 +316,6 @@ function checkSpace () {
 function offerSha (sha) {
 	var v
 		, ready
-
 	v = new Version(sha, config)
 	latestNewSha = sha
 
@@ -329,8 +325,6 @@ function offerSha (sha) {
 			throw reason
 		})
 		.catch(state.log("Prep canceled"))
-		.then(checkSpace)
-		.catch(state.log("Can't check disk space"))
 		.then(function () {
 			return v.prep()
 		})
@@ -346,7 +340,8 @@ function offerSha (sha) {
 		.catch(state.log("Can't run queued prep"))
 		.then(goLive)
 		.catch(state.log("Can't go Live"))
-		// .then(notifyCloud)
+		.then(checkSpace)
+		.catch(state.log("Can't check disk space"))
 		.catch(function (reason) {
 			var msg = "GoLive failed! "
 			if (!reason.newerVersion
@@ -365,29 +360,24 @@ function offerSha (sha) {
 
 	function goLive () {
 		return new Promise(function (resolve, reject) {
-			var delay = live ? config.goLiveDelay : 0
-			log.info("Going live in " + delay + " ms")
-			setTimeout(function () {
-				var error
-					, t
-				if (latestNewSha !== sha) {
-					error = new Error("Go Live canceled: a newer version has been pushed")
-					error.newerVersion = true
-					reject(error)
-				}
-				live = v
-				t = Date.now()
-				log.info(helpers.hNow() + " New version live:", live.sha)
-				resolve(state.get()
-					.then(function (data) {
-						data.lastGoLive = t
-						return state.save(data)
-							.then(function () {
-								return live		
-							})
-					}))
-			}, delay)
-			log.info("Replaying transforms")
+			var error
+				, t
+			if (latestNewSha !== sha) {
+				error = new Error("Go Live canceled: a newer version has been pushed")
+				error.newerVersion = true
+				return reject(error)
+			}
+			live = v
+			t = Date.now()
+			log.info(helpers.hNow() + " New version live:", live.sha)
+			resolve(state.get()
+				.then(function (data) {
+					data.lastGoLive = t
+					return state.save(data)
+						.then(function () {
+							return live		
+						})
+				}))
 			v.replayTransforms()
 		})
 	}
@@ -489,10 +479,10 @@ function acceptHookshots () {
 
 // MIDDLEWARE
 
-function logRequest (req, res, next) {
-	log.info(helpers.hNow(), req.method, req.originalUrl)
-	next()
-}
+// function logRequest (req, res, next) {
+// 	log.info(helpers.hNow(), req.method, req.originalUrl)
+// 	next()
+// }
 
 function prepFavicon (req, res, next) {
 	req.sendPath = path.join(req.sha.root
@@ -561,7 +551,7 @@ function getUA (req, res, next) {
 	req.ua = (typeof req.ua === "string" || req.ua instanceof String)
 		? req.ua.replace(/\(\d+\)$/, "")
 		: ""
-	log.info("ua", req.ua)
+	// log.info("ua", req.ua)
 	next()
 }
 
@@ -674,7 +664,7 @@ function notfound (req, res, next) {
 			, function (err) {
 				if (err) {
 					if (err.code === 'ECONNABORT' && res.statusCode === 304) {
-						log.info('304', req.pathCandidate)
+						// log.info('304', req.pathCandidate)
 					} else if (err.code === 'ENOENT') {
 						notfound(req, res, next)
 					} else {
@@ -682,46 +672,10 @@ function notfound (req, res, next) {
 						log.error(helpers.hNow(), err)
 					}
 				} else {
-					log.info(res.statusCode, req.pathCandidate)
+					// log.info(res.statusCode, req.pathCandidate)
 				}
 			})
 	}
-}
-
-function serveComingSoon (req, res, next) {
-	res.sendFile(config.comingSoonPath
-		, function (err) {
-			if (err) {
-				if (err.code === 'ECONNABORT'
-					&& res.statusCode === 304) {
-						log.info('304', config.comingSoonPath)
-				} else {
-					err.path = config.comingSoonPath
-					log.error(helpers.hNow(), err)
-					next()
-				}
-			} else {
-				log.info(res.statusCode, config.comingSoonPath)
-			}
-		})
-}
-
-function serveComingSoonAppCacheManifest (req, res, next) {
-	res.sendFile(config.comingSoonAppCacheManifestPath
-		, function (err) {
-			if (err) {
-				if (err.code === 'ECONNABORT'
-					&& res.statusCode === 304) {
-						log.info('304', config.comingSoonAppCacheManifestPath)
-				} else {
-					err.path = config.comingSoonAppCacheManifestPath
-					log.error(helpers.hNow(), err)
-					next()
-				}
-			} else {
-				log.info(res.statusCode, config.comingSoonAppCacheManifestPath)
-			}
-		})
 }
 
 function serveIndex (req, res, next) {
@@ -735,14 +689,14 @@ function serveIndex (req, res, next) {
 					if (err) {
 						if (err.code === 'ECONNABORT'
 							&& res.statusCode === 304) {
-								log.info('304', indexPath)
+								// log.info('304', indexPath)
 						} else {
 							err.path = indexPath
 							log.error(helpers.hNow(), err)
 							next()
 						}
 					} else {
-						log.info(res.statusCode, indexPath)
+						// log.info(res.statusCode, indexPath)
 					}
 				})
 		})
@@ -761,7 +715,7 @@ function serveFile (req, res, next) {
 		, function (err) {
 			if (err) {
 				if (err.code === 'ECONNABORT' && res.statusCode === 304) {
-					log.info('304', req.sendPath)
+					// log.info('304', req.sendPath)
 				} else if (err.code === 'ENOENT') {
 					next()
 				} else {
@@ -769,7 +723,7 @@ function serveFile (req, res, next) {
 					log.error(helpers.hNow(), err)
 				}
 			} else {
-				log.info(res.statusCode, req.sendPath)
+				// log.info(res.statusCode, req.sendPath)
 			}
 		})
 }
@@ -940,4 +894,28 @@ function serve () {
 		.catch(function (reason) {
 			log.error("UH OH", reason)
 		})
+}
+
+function cleanup () {
+	return Promise.all(
+		[ path.join(config.assetRoot, "shas/")
+		, path.join(config.assetRoot, "state.json")
+		, path.join(config.assetRoot, "history.json")
+		].map(function (item) {
+			if (item[item.length - 1] === "/") {
+				return readdir(item)
+					.then(function (files) {
+						return Promise.all(files.map(function (i) {
+							if (i !== ".gitignore") {
+								return remove(path.join(item, i))
+							} else {
+								return Promise.resolve()
+							}
+						}))
+					})
+			} else {
+				return remove(item)
+			}
+		})
+	)
 }
