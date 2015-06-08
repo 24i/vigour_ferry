@@ -55,7 +55,7 @@ module.exports = exports = function (opts) {
 		config.git.releaseRepo.name = config.git.repo
 			+ config.git.releaseRepo.suffix
 		config.git.releaseRepo.absPath = path.join(
-			path.dirname(config.cwd)
+			path.dirname(process.cwd())
 			, config.git.releaseRepo.name)
 		return release()
 	} else if (config.deploy) {
@@ -821,14 +821,14 @@ function syncAssets () {
 					reject(error)
 				} else {
 					console.log("Copying assets")
-					resolve(fs.expandStars(config.assets, config.cwd)
+					resolve(fs.expandStars(config.assets, process.cwd())
 						.then(flatten)
 						.then(function (newAssets) {
 							var key
 								, arr = []
 							newAssets['package.json'] = true
 							for (key in newAssets) {
-								arr.push(cp(path.join(config.cwd, key)
+								arr.push(cp(path.join(process.cwd(), key)
 									, path.join(config.git.releaseRepo.absPath, key)))
 							}
 							return Promise.all(arr)
@@ -865,7 +865,7 @@ function sendFiles () {
 			+ " " + config.server.ssl.cert
 			+ " " + config.server.ssl.key
 			+ " " + path.join(__dirname, "install.sh")
-			+ " " + path.join(config.cwd, ".package.json")
+			+ " " + path.join(process.cwd(), ".package.json")
 			+ " " + config.server.user
 			+ "@" + config.server.ip
 			+ ":" + config.server.remoteHome)
