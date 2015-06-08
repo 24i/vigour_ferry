@@ -35,20 +35,20 @@ exports.fetch = function (repo) {
 exports.cloneRelease = function (config) {
 	return exports.clone(config.git.url
 			+ ":" + config.git.username
-			+ "/" + config.git.releaseRepo.name
+			+ "/" + config.releaseRepo.name
 			+ ".git"
-		, config.git.releaseRepo.absPath)
+		, config.releaseRepo.absPath)
 }
 
 exports.commitRelease = function (config) {
 	return helpers.sh('git add .'
-			, { cwd: config.git.releaseRepo.absPath })
+			, { cwd: config.releaseRepo.absPath })
 		.then(function () {
 			return helpers.sh("git commit -m 'new version'"
-			, { cwd: config.git.releaseRepo.absPath })
+			, { cwd: config.releaseRepo.absPath })
 		})
 		.then(function () {
-			return exports.pushu(config.git.releaseRepo.absPath)
+			return exports.pushu(config.releaseRepo.absPath)
 		})
 }
 
@@ -79,22 +79,22 @@ exports.pushu = function (repo) {
 }
 
 exports.checkoutRelease = function (config) {
-	return exports.fetch(config.git.releaseRepo.absPath)
+	return exports.fetch(config.releaseRepo.absPath)
 		.then(function () {
 			return exports.checkout(config.git.branch
-					, config.git.releaseRepo.absPath)
+					, config.releaseRepo.absPath)
 				.catch(function () {
 					return exports.newBranch(config.git.branch
-						, config.git.releaseRepo.absPath)
+						, config.releaseRepo.absPath)
 				})
 		})
 }
 
 exports.pullRelease = function (config) {
-	return exports.pull(config.git.releaseRepo.absPath
+	return exports.pull(config.releaseRepo.absPath
 			, config.git.branch)
 		.catch(function (reason) {
-			return exports.pushu(config.git.releaseRepo.absPath)
+			return exports.pushu(config.releaseRepo.absPath)
 		})
 }
 
@@ -105,7 +105,7 @@ exports.isReleaseOnGitHub = function (config) {
 			, hostname: config.git.api.hostname
 			, path: "/repos/"
 					+ config.git.username
-					+ "/" + config.git.releaseRepo.name
+					+ "/" + config.releaseRepo.name
 			, headers: config.git.api.headers
 			}
 		console.log("Getting release repo from GitHub", options)
@@ -147,7 +147,7 @@ exports.createRelease = function (config) {
 			, headers: config.git.api.headers
 			}
 		, postData = JSON.stringify(
-			{ name: config.git.releaseRepo.name
+			{ name: config.releaseRepo.name
 			, description: "`"
 				+ config.git.repo
 				+ "#" + config.git.branch

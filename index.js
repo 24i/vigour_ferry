@@ -52,11 +52,11 @@ module.exports = exports = function (opts) {
 	if (config.cleanup) {
 		return cleanup()
 	} else if (config.release) {
-		config.git.releaseRepo.name = config.git.repo
-			+ config.git.releaseRepo.suffix
-		config.git.releaseRepo.absPath = path.join(
+		config.releaseRepo.name = config.git.repo
+			+ config.releaseRepo.suffix
+		config.releaseRepo.absPath = path.join(
 			path.dirname(process.cwd())
-			, config.git.releaseRepo.name)
+			, config.releaseRepo.name)
 		return release()
 	} else if (config.deploy) {
 		return serve()
@@ -790,7 +790,7 @@ function setHeaders (res, opts) {
 
 function getReleaseRepo () {
 	return new Promise(function (resolve, reject) {
-		fs.exists(config.git.releaseRepo.absPath, function (exists) {
+		fs.exists(config.releaseRepo.absPath, function (exists) {
 			if (exists) {
 				resolve()
 			} else {
@@ -815,7 +815,7 @@ function getReleaseRepo () {
 function syncAssets () {
 	return new Promise(function (resolve, reject) {
 		helpers.sh('rm -rf *'
-			, { cwd: config.git.releaseRepo.absPath }
+			, { cwd: config.releaseRepo.absPath }
 			, function (error, stdout, stderr) {
 				if (error) {
 					reject(error)
@@ -829,7 +829,7 @@ function syncAssets () {
 							newAssets['package.json'] = true
 							for (key in newAssets) {
 								arr.push(cp(path.join(process.cwd(), key)
-									, path.join(config.git.releaseRepo.absPath, key)))
+									, path.join(config.releaseRepo.absPath, key)))
 							}
 							return Promise.all(arr)
 						})
