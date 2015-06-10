@@ -46,25 +46,32 @@ var https = require('https')
 
 module.exports = exports = function (opts) {
 	var self = this
+		, action
 
 	config = opts.vigour.packer
 
 	if (config.cleanup) {
-		return cleanup()
+		action = cleanup
 	} else if (config.release) {
 		config.releaseRepo.name = config.git.repo
 			+ config.releaseRepo.suffix
 		config.releaseRepo.absPath = path.join(
 			path.dirname(process.cwd())
 			, config.releaseRepo.name)
-		return release()
+		action = release
 	} else if (config.deploy) {
-		return serve()
+		action = serve
 	} else if (!config.src) {
+		config.releaseRepo.name = config.git.repo
+			+ config.releaseRepo.suffix
 		config.git.api.headers.Authorization = "Basic "
 			+ btoa(config.git.username
 				+ ":"
 				+ config.git.password)
+	}
+
+	if (action) {
+		return action()
 	}
 	
 	try {
@@ -72,6 +79,10 @@ module.exports = exports = function (opts) {
 			+ config.slack.id
 	} catch (e) {
 		// log.warn("Slack config invalid", e, e.stack)
+	}
+
+	if (!config.git.branch) {
+		config.git.branch = "master"
 	}
 
 	log.info("CONFIG", JSON.stringify(config, null, 2))
@@ -240,11 +251,12 @@ function getLatestSha () {
 					hostname: config.git.api.hostname
 					, path: path.join('/repos'
 						, config.git.owner
-						, config.git.repo
+						, config.releaseRepo.name
 						, 'commits'
 						, config.git.branch)
 					, headers: config.git.api.headers
 				}
+				log.info("Getting latest", options)
 			} catch (e) {
 				log.error("Git misconfigured, check owner, repo and branch")
 				return reject(new Error("Invalid config"))
@@ -252,13 +264,20 @@ function getLatestSha () {
 			req = https.request(options
 				, function (res) {
 					var concatenate
+						,	err 
 					res.on('error', function (err) {
 						err.options = options
 						reject(err)
 					})
 					if (res.statusCode === 401) {
 						log.error("Git unauthorized, check username and password")
-						reject(new Error("Invalid config"))
+						err = new Error("Invalid config")
+						reject(err)
+					} else if (res.statusCode === 404) {
+						log.error("Repo or branch not found")
+						err = new Error("Invalid config")
+						err.TODO = "Check git username and password"
+						reject(err)
 					} else {
 						concatenate = concat(function (data) {
 							var parsed

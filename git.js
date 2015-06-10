@@ -4,6 +4,7 @@ var https = require('https')
 	, helpers = require('./helpers')
 	, Promise = require('promise')
 	, writeFile = Promise.denodeify(fs.writeFile)
+	, log = require('npmlog')
 
 module.exports = exports = {}
 
@@ -108,12 +109,10 @@ exports.isReleaseOnGitHub = function (config) {
 					+ "/" + config.releaseRepo.name
 			, headers: config.git.api.headers
 			}
-		console.log("Getting release repo from GitHub", options)
 		var req = https.request(options
 			, function (res) {
 				var err
 				res.setEncoding('utf8')
-				console.log(res.statusCode)
 				if (res.statusCode === 200) {
 					resolve(true)
 				} else if (res.statusCode === 404) {
@@ -159,14 +158,18 @@ exports.createRelease = function (config) {
 			, has_downloads: false
 			})
 		options.headers['Content-Length'] = postData.length
-		console.log("Creating release repo", options, "\nbody: ", postData)
+		log.warn("Creating repo", options, "\nPOST data:", postData)
 		var req = https.request(options
 			, function (res) {
+				var err
 				console.log(res.statusCode)
 				if (res.statusCode === 201) {
 					resolve()
-				} else {
-					reject(res)
+				} else if (res.statusCode === 401) {
+					log.error("Unauthorized")
+					err = new Error("Invalid config")
+					err.TODO = "Check git username and password"
+					reject(err)
 				}
 			})
 		req.on('error', function (e) {
