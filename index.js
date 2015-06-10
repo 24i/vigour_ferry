@@ -81,9 +81,9 @@ module.exports = exports = function (opts) {
 		// log.warn("Slack config invalid", e, e.stack)
 	}
 
-	if (!config.git.branch) {
-		config.git.branch = "master"
-	}
+	// if (!config.git.branch) {
+	// 	config.git.branch = "master"
+	// }
 
 	log.info("CONFIG", JSON.stringify(config, null, 2))
 
@@ -259,7 +259,8 @@ function getLatestSha () {
 				log.info("Getting latest", options)
 			} catch (e) {
 				log.error("Git misconfigured, check owner, repo and branch")
-				return reject(new Error("Invalid config"))
+				e.TODO = "Check git owner repo and branch"
+				return reject(e)
 			}
 			req = https.request(options
 				, function (res) {
@@ -807,14 +808,29 @@ function setHeaders (res, opts) {
 	// res.set("Edge-Control", "public, max-age=0")
 }
 
+function getGitBranch () {
+	return readFile(path.join(process.cwd(), '.git', 'HEAD'), 'utf8')
+		.then(function (data) {
+			config.git.branch = data.slice(data.lastIndexOf("/") + 1)
+		})
+}
+
 function getReleaseRepo () {
-	return new Promise(function (resolve, reject) {
-		fs.exists(config.releaseRepo.absPath, function (exists) {
-			if (exists) {
-				resolve()
-			} else {
-				resolve(
-					git.isReleaseOnGitHub(config)
+	return (new Promise(function (resolve, reject) {
+		var err
+		if (!config.git.branch) {
+			resolve(getGitBranch())
+		} else {
+			resolve()
+		}
+	}))
+		.then(function () {
+			fs.exists(config.releaseRepo.absPath, function (exists) {
+				var returns
+				if (exists) {
+					returns = true
+				} else {
+					returns = git.isReleaseOnGitHub(config)
 						.then(function (is) {
 							if (is) {
 								return git.cloneRelease(config)
@@ -825,10 +841,10 @@ function getReleaseRepo () {
 									})
 							}
 						})
-				)
-			}
+				}
+				return returns
+			})
 		})
-	})
 }
 
 function syncAssets () {

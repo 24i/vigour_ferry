@@ -149,7 +149,6 @@ exports.createRelease = function (config) {
 			{ name: config.releaseRepo.name
 			, description: "`"
 				+ config.git.repo
-				+ "#" + config.git.branch
 				+ "`"
 				+ " release assets"
 			, private: false
