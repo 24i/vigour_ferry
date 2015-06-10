@@ -56,7 +56,7 @@ function ErrorM (opts) {
       }
     })
   } catch (e) {
-    log.warn("Mail misconfigured, check fromAddress, to, username, password", e, e.stack)
+    self.misconfigured = e
   }
 }
 
@@ -79,30 +79,35 @@ ErrorM.prototype.warnDev = function (msg) {
   }
   return Promise.all([
     (new Promise(function (resolve, reject) {
-      if (msg) {
-        self.mailOptions.text = msg
-      }
-
-      // log.warn("\nSending email: "
-      //   , JSON.stringify(self.mailOptions, null, 2)
-      //   , "\n\n")
-
-      self.transporter.sendMail(self.mailOptions, function (err, info){
-        if (err) {
-         if (err.responseCode === 454) {
-          log.warn("Can't log into mail service")
-          err.TODO = "Check mail username and password"
-          return reject(err)
-         } else {
-          log.warn("Can't send mail")
-          err.TODO = "Check mail fromAddress and to"
-          return reject(err)
-         }
-        } else {
-         log.info('email sent: ' + info.response)
-         return resolve()
+      if (self.misconfigured) {
+        self.misconfigured.TODO = "check mail fromAddress, to, username and password"
+        reject(self.misconfigured)
+      } else {
+        if (msg) {
+          self.mailOptions.text = msg
         }
-      })
+
+        // log.warn("\nSending email: "
+        //   , JSON.stringify(self.mailOptions, null, 2)
+        //   , "\n\n")
+
+        self.transporter.sendMail(self.mailOptions, function (err, info){
+          if (err) {
+           if (err.responseCode === 454) {
+            log.warn("Can't log into mail service")
+            err.TODO = "Check mail username and password"
+            return reject(err)
+           } else {
+            log.warn("Can't send mail")
+            err.TODO = "Check mail fromAddress and to"
+            return reject(err)
+           }
+          } else {
+           log.info('email sent: ' + info.response)
+           return resolve()
+          }
+        })
+      }
     }))
       .catch(function (reason) {
         log.error("Can't send mail", reason)
