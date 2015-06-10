@@ -443,7 +443,7 @@ Version.prototype.download = function () {
 				hostname: self.config.git.api.hostname
 				, path: '/' + path.join('repos'
 					, self.config.git.owner
-					, self.config.git.repo
+					, self.config.releaseRepo.name
 					, 'git'
 					, 'commits'
 					, self.sha)
@@ -490,7 +490,7 @@ Version.prototype.getLocal = function () {
 Version.prototype.clone = function () {
 	var self = this
 	log.info("heapUsed: ", process.memoryUsage().heapUsed)
-	log.info(helpers.hNow() + " Cloning ", self.config.git.repo)
+	log.info(helpers.hNow() + " Cloning ", self.config.releaseRepo.name)
 	return helpers.sh('git clone --depth=1 -b '
 				+ self.config.git.branch
 				+ ' '
@@ -498,7 +498,7 @@ Version.prototype.clone = function () {
 				+ ':'
 				+ self.config.git.owner
 				+ '/'
-				+ self.config.git.repo
+				+ self.config.releaseRepo.name
 				+ '.git'
 				+ ' '
 				+ self.sha
