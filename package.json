@@ -7,7 +7,7 @@
     "packer": "./bin/index.js"
   },
   "scripts": {
-    "start": "./node_modules/.bin/forever index.js",
+    "start": "./node_modules/.bin/forever bin/index.js",
     "test": "echo 'Please `cd tests && node <component>.js`'"
   },
   "repository": {
