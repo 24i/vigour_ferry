@@ -16,9 +16,7 @@ var https = require('https')
 
 	// , vCloud = require('vigour-js/browser/network/cloud')
 	// 	.inject(require('vigour-js/browser/network/cloud/datacloud'))
-	, flatten = require('vigour-js/util/flatten')
 	, ajax = require('vigour-js/browser/network/ajax')
-	, readFile = Promise.denodeify(fs.readFile)
 	, remove = Promise.denodeify(fs.remove)
 	, readdir = Promise.denodeify(fs.readdir)
 	, cp = Promise.denodeify(fs.cp)
@@ -32,7 +30,7 @@ var https = require('https')
 	, ErrorManager = require('./ErrorM')
 	, error
 	, serverPkg = require('./package.json')
-	, git = require('./git')
+	, release = require('./release')
 	, config
 	, state
 	, prepQueue = new PrepQueue()
@@ -71,7 +69,7 @@ module.exports = exports = function (opts) {
 	}
 
 	if (action) {
-		return action()
+		return action(config)
 	}
 	
 	try {
@@ -806,91 +804,6 @@ function setHeaders (res, opts) {
 
 	// res.set("cache-control", "public, max-age=0")
 	// res.set("Edge-Control", "public, max-age=0")
-}
-
-function getGitBranch () {
-	return readFile(path.join(process.cwd(), '.git', 'HEAD'), 'utf8')
-		.then(function (data) {
-			config.git.branch = data.slice(data.lastIndexOf("/") + 1)
-		})
-}
-
-function getReleaseRepo () {
-	return (new Promise(function (resolve, reject) {
-		var err
-		if (!config.git.branch) {
-			resolve(getGitBranch())
-		} else {
-			resolve()
-		}
-	}))
-		.then(function () {
-			fs.exists(config.releaseRepo.absPath, function (exists) {
-				var returns
-				if (exists) {
-					returns = true
-				} else {
-					returns = git.isReleaseOnGitHub(config)
-						.then(function (is) {
-							if (is) {
-								return git.cloneRelease(config)
-							} else {
-								return git.createRelease(config)
-									.then(function () {
-										return git.cloneRelease(config)	
-									})
-							}
-						})
-				}
-				return returns
-			})
-		})
-}
-
-function syncAssets () {
-	return new Promise(function (resolve, reject) {
-		helpers.sh('rm -rf *'
-			, { cwd: config.releaseRepo.absPath }
-			, function (error, stdout, stderr) {
-				if (error) {
-					reject(error)
-				} else {
-					console.log("Copying assets")
-					resolve(fs.expandStars(config.assets, process.cwd())
-						.then(flatten)
-						.then(function (newAssets) {
-							var key
-								, arr = []
-							newAssets['package.json'] = true
-							for (key in newAssets) {
-								arr.push(cp(path.join(process.cwd(), key)
-									, path.join(config.releaseRepo.absPath, key)))
-							}
-							return Promise.all(arr)
-						})
-					)
-				}
-			})
-	})
-}
-
-
-
-function release () {
-	return getReleaseRepo()
-		.then(function () {
-			return git.checkoutRelease(config)
-		})
-		.then(function () {
-			return git.pullRelease(config)
-		})
-		.then(syncAssets)
-		.then(function () {
-			return git.commitRelease(config)
-		})
-		.catch(function (reason) {
-			log.error("oops", reason)
-		})
 }
 
 function sendFiles () {
