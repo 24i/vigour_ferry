@@ -148,7 +148,7 @@ exports.items = {
 ,	"vigour.packer.git.branch":
 	{ d: null
 	, env: "GIT_BRANCH"
-	, cli: "--git-branch <name>"
+	, cli: "-b, --git-branch <name>"
 	, getter: "gitBranch"
 	, desc: "Branch of app to serve"
 	}
