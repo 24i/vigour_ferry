@@ -51,6 +51,9 @@ exports.commitRelease = function (config) {
 		.then(function () {
 			return exports.pushu(config.releaseRepo.absPath)
 		})
+		.then(function () {
+			log.info("New version should go live on all packer servers serving branch " + config.git.branch)
+		})
 }
 
 exports.newBranch = function (branch, repo) {
