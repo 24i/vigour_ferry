@@ -9,7 +9,7 @@ var https = require('https')
 	, vConfig = require('vigour-js/util/config')
 	, hash = require('vigour-js/util/hash')
 	, State = require('./State')
-	, packerUtil = require('./packerUtil')
+	, util = require('./util')
 	, helpers = require('./helpers')
 	, Transformer = require('./Transformer')
 	, ShaHistory = require('./ShaHistory')
@@ -289,8 +289,8 @@ Version.prototype.makeAppCacheManifest = function (pkg) {
 						return
 					}
 					// Next
-					assets = packerUtil.listify(extended)
-					packerUtil.asyncForIn(assets
+					assets = util.listify(extended)
+					util.asyncForIn(assets
 						, addAsset
 						, function (err) {
 							if (err) {
@@ -336,8 +336,8 @@ Version.prototype.makeManifest = function (pkg) {
 					return
 				}
 				// Next
-				assets = packerUtil.listify(extended)
-				packerUtil.asyncForIn(assets
+				assets = util.listify(extended)
+				util.asyncForIn(assets
 					, addAsset
 					, function (err) {
 						var manifestStr
