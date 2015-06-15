@@ -105,3 +105,10 @@ exports.sh = function (command, opts, cb) {
 	}
 	return p
 }
+
+exports.serveCode = function (code) {
+	return function (req, res, next) {
+		log.warn(code, req.originalUrl)
+		res.status(code).end(code + " " + req.originalUrl)
+	}
+}
