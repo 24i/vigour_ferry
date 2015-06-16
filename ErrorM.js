@@ -1,9 +1,10 @@
-var fs = require('graceful-fs')
+var fs = require('vigour-fs')
   , log = require('npmlog')
   , http = require('follow-redirects').http
   , https = require('follow-redirects').https
   , nodemailer = require('nodemailer')
   , Promise = require('promise')
+  , helpers = require('./helpers')
   , exists = function (path) {
     return new Promise(function (resolve, reject) {
       fs.exists(path, resolve)
@@ -14,17 +15,41 @@ var fs = require('graceful-fs')
 
 module.exports = exports = ErrorM
 
-function getIp () {
-  http.get("http://www.curlmyip.com", function (res) {
-    var ip = ""
-    res.setEncoding('utf8')
-    res.on('data', function (chunk) {
-      ip += chunk
-    })
-    res.on('error', function (err) {
-      log.error("Error receiving IP", err)
-    })
-    res.on('end', function () {
+// function getIp (self, opts) {
+//   log.info("Requesting IP")
+//   http.get("http://ifconfig.me/ip", function (res) {
+//     var ip = ""
+//     res.setEncoding('utf8')
+//     res.on('data', function (chunk) {
+//       ip += chunk
+//     })
+//     res.on('error', function (err) {
+//       log.error("Error receiving IP", err)
+//     })
+//     res.on('end', function () {
+//       ip = ip.replace(/\s/g, "")
+//       log.info("IP", ip)
+//       machineIP = ip
+
+//       self.mailOptions.subject = 'Warning from ' + ip
+//       self.mailOptions.subject += ' (' + opts.git.branch + ')'
+//     })
+//   }).on('error', function (err) {
+//     if (err.code === "ETIMEDOUT") {
+//       log.warn("IP request timed out, trying again in 5 seconds")
+//       setTimeout(function () {
+//         getIp(self, opts)
+//       }, 5000)
+//     } else {
+//       log.error("Error requesting IP", err)
+//     }
+//   })
+// }
+
+function getIp (self, opts) {
+  log.info("Getting IP")
+  helpers.sh("dig +short myip.opendns.com @resolver1.opendns.com")
+    .then(function (ip) {
       ip = ip.replace(/\s/g, "")
       log.info("IP", ip)
       machineIP = ip
@@ -32,14 +57,6 @@ function getIp () {
       self.mailOptions.subject = 'Warning from ' + ip
       self.mailOptions.subject += ' (' + opts.git.branch + ')'
     })
-  }).on('error', function (err) {
-    if (err.code === "ETIMEDOUT") {
-      log.warn("IP request timed out, trying again in 5 seconds")
-      setTimeout(getIp, 5000)
-    } else {
-      log.error("Error requesting IP", err)
-    }
-  })
 }
 
 function ErrorM (opts) {
@@ -48,7 +65,7 @@ function ErrorM (opts) {
   self.mailOptions = {}
   if ((opts.mail || opts.slack) && !machineIP && !ipRequested) {
     ipRequested = true
-    getIp()
+    getIp(self, opts)
   }
   try {
     self.mailOptions.from = 'Packer Server <' + opts.mail.fromAddress + '>'
