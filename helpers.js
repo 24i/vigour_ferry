@@ -89,7 +89,7 @@ exports.sh = function (command, opts, cb) {
 		console.log('Executing `', command, '`\n\tCWD:', opts.cwd)
 		proc.exec(command
 		, { cwd: opts.cwd }
-		, function (error, stderr, stdout) {
+		, function (error, stdout, stderr) {
 			if (error) {
 				console.error(stderr)
 				reject(error)
