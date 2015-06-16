@@ -23,7 +23,7 @@ exports.items = {
 ,	"vigour.packer.maxHistory":
 	{ d: 5
 	, env: "PACKER_MAX_HISTORY"
-	, cli: "-h, --history, --max-history <nb>"
+	, cli: "--history, --max-history <nb>"
 	, getter: "history"
 	, desc: "Maximum number of versions to serve"
 	}
@@ -169,7 +169,7 @@ exports.items = {
 ,	"vigour.packer.git.port":
 	{ d: 8443
 	, env: "GIT_PORT"
-	, cli: "--git-port <portNumber>"
+	, cli: "-g, --git-port <portNumber>"
 	, getter: "gitPort"
 	, desc: "Port on which to listen for GitHub WebHooks"
 	}
@@ -258,7 +258,7 @@ exports.items = {
 , "vigour.packer.delpoy":
 	{ d: false
 	, env: "PACKER_DEPLOY"
-	, cli: "--deploy"
+	, cli: "-d, --deploy"
 	, getter: "deploy"
 	, desc: "Install packer on remote machine"
 	}
@@ -272,7 +272,7 @@ exports.items = {
 ,	"vigour.packer.server.identity":
 	{ d: null
 	, env: "PACKER_SERVER_IDENTITY"
-	, cli: "-i, --identity <path>"
+	, cli: "--identity <path>"
 	, getter: "identity"
 	, desc: "Path to identity file to use when connecting to vigour.package.server.ip"
 	}
@@ -314,7 +314,7 @@ exports.items = {
 ,	"vigour.packer.server.user":
 	{ d: null
 	, env: "PACKER_SERVER_USER"
-	, cli: "-u, --server-user <name>"
+	, cli: "--server-user <name>"
 	, getter: "serverUser"
 	, desc: "User to authenticate as on vigour.packer.server.ip"
 	}
