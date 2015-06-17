@@ -67,7 +67,7 @@ for (key in config.items) {
 	if (cliEntry) {
 		if (getter) {
 			value = program[getter]
-			if (value) {
+			if (value || cliEntry.indexOf("--no-") === 0) {
 				set(cli, key, value, "cli clobbers")
 				isConfig && addConfig(key, value)
 			}	
@@ -83,7 +83,10 @@ if (lastKeySeen) {
 
 files.reduce(function (prev, curr, indx, arry) {
 	return prev.then(function (p) {
-		return readFile(path.join(process.cwd(), curr), 'utf8')
+		return readFile((path.isAbsolute(curr)
+				? curr
+				: path.join(process.cwd(), curr))
+			, 'utf8')
 			.catch(function (reason) {
 				console.error("Can't read file", curr)
 			})

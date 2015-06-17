@@ -77,12 +77,26 @@ exports.items = {
 	, desc: "Sha history file name"
 	}
 , "vigour.packer.stateFileName":
- { d: "state.json"
- , env: "PACKER_STATE_FILENAME"
- , cli: "--state-filename <name>"
- , getter: "stateFilename"
- , desc: "Name of dynamic file containing state"
- }
+	{ d: "state.json"
+	, env: "PACKER_STATE_FILENAME"
+	, cli: "--state-filename <name>"
+	, getter: "stateFilename"
+	, desc: "Name of dynamic file containing state"
+	}
+, "vigour.packer.robots":
+	{ d: true
+	, env: "PACKER_ROBOTS"
+	, cli: "--no-robots"
+	, getter: "robots"
+	, desc: "Serves `vigour-packer-server/robots.txt` on `GET /robots.txt` by default. Use --no-robots to serve the `robots.txt` from your app instead"
+	}
+, "vigour.packer.geo":
+	{ d: true
+	, env: "PACKER_GEO"
+	, cli: "--no-geo"
+	, getter: "geo"
+	, desc: "Serves `vigour-packer-server/geo.json` on `GET /geo` by default. Use --no-geo to remove this feature"
+	}
 
 // Mail
 , "vigour.packer.mail.fromAddress":

@@ -76,16 +76,20 @@ function serve (cfg) {
 		, serveFile
 		// , warnDevMid("Can't serve favicon.ico")
 		, helpers.serveCode(500))
-	web.get('/robots.txt'
-		, prepRobots
-		, serveFile
-		// , warnDevMid("Can't serve robots.txt")
-		, helpers.serveCode(500))
-	web.get('/geo'
-		, prepGeo
-		, serveFile
-		, warnDevMid("Can't serve geo")
-		, helpers.serveCode(500))
+	if (config.robots) {
+		web.get('/robots.txt'
+			, prepRobots
+			, serveFile
+			// , warnDevMid("Can't serve robots.txt")
+			, helpers.serveCode(500))
+	}
+	if (config.geo) {
+		web.get('/geo'
+			, prepGeo
+			, serveFile
+			, warnDevMid("Can't serve geo")
+			, helpers.serveCode(500))
+	}
 	web.get('/native/:sha/*'
 		, prepShaRequest
 		, getSha

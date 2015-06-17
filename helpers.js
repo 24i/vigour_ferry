@@ -1,5 +1,6 @@
 var Promise = require('promise')
 	, proc = require('child_process')
+	, log = require('npmlog')
 module.exports = exports = {}
 
 exports.getter = function (create) {
@@ -86,12 +87,12 @@ exports.sh = function (command, opts, cb) {
 		opts.cwd = __dirname	
 	}
 	p = new Promise(function (resolve, reject) {
-		console.log('Executing `', command, '`\n\tCWD:', opts.cwd)
+		log.info('Executing `', command, '`\n\tCWD:', opts.cwd)
 		proc.exec(command
 		, { cwd: opts.cwd }
 		, function (error, stdout, stderr) {
 			if (error) {
-				console.error(stderr)
+				log.error(stderr)
 				reject(error)
 			} else {
 				resolve(stdout)

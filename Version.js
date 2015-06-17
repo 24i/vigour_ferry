@@ -476,7 +476,9 @@ Version.prototype.getLocal = function () {
 	log.info("heapUsed: ", process.memoryUsage().heapUsed)
 	log.info(helpers.hNow() + " Copying ", self.config.src)
 	return helpers.sh('cp -fR '
-				+ self.config.src
+				+ (path.isAbsolute(self.config.src)
+					? self.config.src
+					: path.join(process.cwd(), self.config.src))
 				+ ' '
 				+ self.sha
 			, { cwd: path.join(self.config.assetRoot, self.config.shaDir) })
