@@ -5,10 +5,12 @@ var express = require('express')
 	, github
 	, gitListener
 	, cfg
+	, offerSha
 
 module.exports = exports = {}
 
-exports.init = function (config) {
+exports.init = function (config, os) {
+	offerSha = os
 	cfg = config
 	github = express()
 	github.post('/push', handleHookshot)
@@ -49,7 +51,7 @@ function handleHookshot (req, res, next) {
 			this.abort()
 			try {
 				branch = r.slice(r.lastIndexOf('/') + 1)
-				if (branch === config.git.branch || branch === '_local') {
+				if (branch === cfg.git.branch || branch === '_local') {
 					sha = (branch === '_local')
 						? '_local'
 						: h

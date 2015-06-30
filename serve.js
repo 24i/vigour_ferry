@@ -176,7 +176,7 @@ function serveStatus (req, res, next) {
 
 function init () {
 	var self = this
-	hookListener.init(config)
+	hookListener.init(config, offerSha)
 	return getLatestSha()
 		.catch(state.log("Can't get latest SHA", true))
 		.catch(wrongBranch)
