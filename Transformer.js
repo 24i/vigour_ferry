@@ -199,7 +199,7 @@ Transformer.prototype.history.save = function (file, id, toSave) {
 			}
 			if (!data[file][id]) {
 				data[file][id] = toSave
-				return write(self.history.path
+				return write(self.path
 						, JSON.stringify(data)
 						, 'utf8')
 					.catch(state.log("Can't write transform history"))
