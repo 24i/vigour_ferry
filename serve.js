@@ -107,6 +107,8 @@ function serve (cfg) {
 		, notfound
 		, helpers.serveCode(500))
 
+	web.options('/', helpers.serveCode(200))
+
 	web.use(helpers.serveCode(400))
 
 	init()
