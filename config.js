@@ -150,6 +150,13 @@ exports.items = {
 	, getter: "slackToken"
 	, desc: "Token to use when authenticating slack requests"
 	}
+, "vigour.packer.slack.channel":
+	{ d: "packers"
+	, env: "SLACK_CHANNEL"
+	, cli: "--slack-channel <channel>"
+	, getter: "slackChannel"
+	, desc: "Slack channel to send warnings to, without the leading #"
+	}
 
 // Git
 , "vigour.packer.git.owner":

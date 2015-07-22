@@ -64,7 +64,7 @@ function ErrorM (opts) {
   self.opts = opts
   self.mailOptions = {}
   if (opts.slack) {
-    self.channel = "#" + (opts.slack.channel || "packers")
+    self.channel = "#" + opts.slack.channel
   }
   if ((opts.mail || opts.slack) && !machineIP && !ipRequested) {
     ipRequested = true
