@@ -67,10 +67,16 @@ for (key in config.items) {
 	if (cliEntry) {
 		if (getter) {
 			value = program[getter]
-			if (value || cliEntry.indexOf("--no-") === 0) {
-				set(cli, key, value, "cli clobbers")
-				isConfig && addConfig(key, value)
-			}	
+			if (cliEntry.indexOf("--no-") === 0) {
+				if (!value) {
+					set(cli, key, value, "cli clobbers")
+				}
+			} else {
+				if (value) {
+					set(cli, key, value, "cli clobbers")
+					isConfig && addConfig(key, value)
+				}
+			}
 		} else {
 			throw new Error("No getter")
 		}
