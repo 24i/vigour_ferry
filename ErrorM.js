@@ -52,7 +52,7 @@ function getIp (self, opts) {
     .then(function (ip) {
       ip = ip.replace(/\s/g, "")
       log.info("IP", ip)
-      machineIP = ip
+      self.machineIP = machineIP = ip
 
       self.mailOptions.subject = 'Warning from ' + ip
       self.mailOptions.subject += ' (' + opts.git.branch + ')'

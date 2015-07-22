@@ -149,13 +149,16 @@ function serveStatus (req, res, next) {
 						next()
 					} else {
 						du = Math.round(100*free/total) + "%"
-						text = "branch: " + config.git.branch
+						text = "repo: " + config.git.repo
+							+ "\nbranch: " + config.git.branch
 							+ "\nlive: " + live.sha
+							+ "\nport: " + config.port
+							+ "\ngit port: " + config.git.port
 							+ "\nfreeSpace: " + du
 						try {
 							reply = JSON.stringify({
 								text: text
-								, username: error.instance_ip
+								, username: error.machineIP
 							}, null, 2)
 							log.info("Responding", reply)
 							res.end(reply)
