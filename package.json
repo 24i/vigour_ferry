@@ -1,6 +1,6 @@
 {
   "name": "vigour-packer-server",
-  "version": "1.0.0",
+  "version": "1.1.1",
   "description": "Pushes new timestamps for apps to be notified of updates",
   "main": "index.js",
   "bin": {
