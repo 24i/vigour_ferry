@@ -704,9 +704,11 @@ function setHeaders (res, opts) {
 	res.set("cache-control", (opts && opts.cache)
 			? "public, no-transform, max-age=" + maxage
 			: "public, max-age=0")
-	res.set("Edge-Control", (opts && opts.cdnCache)
+	if (config.akamai) {
+		res.set("Edge-Control", (opts && opts.cdnCache)
 			? "!no-cache, max-age=" + maxage
 			: "public, max-age=0")
+	}
 
 	// res.set("cache-control", "public, max-age=0")
 	// res.set("Edge-Control", "public, max-age=0")

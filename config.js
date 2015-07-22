@@ -97,6 +97,13 @@ exports.items = {
 	, getter: "geo"
 	, desc: "Serves `vigour-packer-server/geo.json` on `GET /geo` by default. Use --no-geo to remove this feature"
 	}
+, "vigour.packer.akamai":
+	{ d: false
+	, env: "PACKER_AKAMAI"
+	, cli: "--akamai"
+	, getter: "akamai"
+	, desc: "Includes Akamai-specific 'Edge-Control' cache headers"
+	}
 
 // Mail
 , "vigour.packer.mail.fromAddress":
