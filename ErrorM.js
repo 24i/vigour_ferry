@@ -129,7 +129,7 @@ ErrorM.prototype.warnDev = function (msg) {
             return reject(err)
            }
           } else {
-           log.info('email sent: ' + info.response)
+           log.info('email sent to ' + self.mailOptions.to + ":\n" + info.response)
            return resolve()
           }
         })
