@@ -63,6 +63,9 @@ function ErrorM (opts) {
   var self = this
   self.opts = opts
   self.mailOptions = {}
+  if (opts.slack) {
+    self.channel = "#" + (opts.slack.channel || "packers")
+  }
   if ((opts.mail || opts.slack) && !machineIP && !ipRequested) {
     ipRequested = true
     getIp(self, opts)
@@ -140,7 +143,7 @@ ErrorM.prototype.warnDev = function (msg) {
       })
     , (new Promise(function (resolve, reject) {
       try {
-        var postData = makePayload(machineIP, self.opts.git.branch, msg)
+        var postData = makePayload(machineIP, msg, self)
           , options = {
             hostname: 'hooks.slack.com'
             , port: 443
@@ -154,7 +157,7 @@ ErrorM.prototype.warnDev = function (msg) {
           , req
       } catch (e) {
         log.warn("Slack misconfigured")
-        e.TODO = "Check Slack id and token"
+        e.TODO = "Check Slack id, token and channel"
         return reject(e)
       }
 
@@ -173,7 +176,7 @@ ErrorM.prototype.warnDev = function (msg) {
         res.on('end', function () {
           var err
           if (response === 'ok') {
-            log.info('slack message sent')
+            log.info('slack message sent to ' + self.channel)
             resolve()
           } else {
             err = new Error("Invalid Login")
@@ -191,9 +194,9 @@ ErrorM.prototype.warnDev = function (msg) {
   ])
 }
 
-function makePayload (i, b, m) {
+function makePayload (i, m, self) {
   return 'payload=' + JSON.stringify(
-    { text: i + ' (' + b + ') ' + m
-    , channel: "#mtv-play-packers"
+    { text: i + ' ' + m
+    , channel: self.channel
     })
 }
