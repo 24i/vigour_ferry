@@ -6,7 +6,9 @@ describe("Packer", function () {
     it ("should answer with 200", function (done) {
       var x = 200
       setTimeout(function () {
-        done(expect(x).to.be(200))
+        expect(x).to.equal(200)
+        // x.should.equal(200)
+        done()
       }, 20)
     })
   })
