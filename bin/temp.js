@@ -1,13 +1,13 @@
 var path = require('path')
 	, program = require('commander')
 	, Promise = require('promise')
+	, log = require('npmlog')
 	, fs = require('vigour-fs')
 	, VObj = require('vigour-js/object')
 	, flatten = require('vigour-js/util/flatten')
 	, readFile = Promise.denodeify(fs.readFile)
 	, opts = new VObj({})
 	, defaults = {}
-	, files = {}
 	, env = {}
 	, cli = {}
 	, finale = {}
@@ -90,15 +90,16 @@ exports.doIt = function (pkg, config, packer) {
 					? curr
 					: path.join(process.cwd(), curr))
 				, 'utf8')
-				.catch(function (reason) {
-					console.error("Can't read file", curr)
-				})
 				.then(function (data) {
 					p.merge(JSON.parse(data))
 					return p
+				}
+				, function (reason) {
+					log.warn("Can't read file", curr)
+					return p
 				})
 				.catch(function (reason) {
-					console.error("Can't parse or merge", curr)
+					log.error("Can't parse or merge", curr)
 				})
 		})
 	}, Promise.resolve(new VObj({})))
@@ -112,13 +113,13 @@ exports.doIt = function (pkg, config, packer) {
 			opts.merge(finale)
 			flat = flatten(opts.raw, ".")
 			for (key in tags) {
-				console.log(tags[key], key, flat[key])
+				log.info(tags[key], key, flat[key])
 			}
 
 			packer(opts.raw)
 		})
 		.catch(function (reason) {
-			console.error("Oops", reason, reason.stack)
+			log.error("Oops", reason, reason.stack)
 		})	
 }
 
