@@ -3,5 +3,5 @@ node_modules
 .package.json
 .directv.json
 .mtvplay.json
-build*
-bundle*
+build.*
+bundle.*
