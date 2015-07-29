@@ -20,6 +20,7 @@ exports.init = function (config, os) {
 exports.acceptHookshots = function () {
 	gitListener = github.listen(cfg.git.port)
 	log.info("Listening for hookshots on port", cfg.git.port)
+	return gitListener
 }
 
 function handleHookshot (req, res, next) {
