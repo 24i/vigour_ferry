@@ -38,24 +38,26 @@ function getReleaseRepo (config) {
 		}
 	}))
 		.then(function () {
-			fs.exists(config.releaseRepo.absPath, function (exists) {
-				var returns
-				if (exists) {
-					returns = true
-				} else {
-					returns = git.isReleaseOnGitHub(config)
-						.then(function (is) {
-							if (is) {
-								return git.cloneRelease(config)
-							} else {
-								return git.createRelease(config)
-									.then(function () {
-										return git.cloneRelease(config)	
-									})
-							}
-						})
-				}
-				return returns
+			return new Promise(function (resolve, reject) {
+				fs.exists(config.releaseRepo.absPath, function (exists) {
+					var returns
+					if (exists) {
+						returns = true
+					} else {
+						returns = git.isReleaseOnGitHub(config)
+							.then(function (is) {
+								if (is) {
+									return git.cloneRelease(config)
+								} else {
+									return git.createRelease(config)
+										.then(function () {
+											return git.cloneRelease(config)	
+										})
+								}
+							})
+					}
+					resolve(returns)
+				})
 			})
 		})
 }
