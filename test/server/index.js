@@ -53,6 +53,7 @@ describe("Server", function () {
 			})
 			res.on('end', function () {
 				expect(total).to.be.a.string
+				// TODO Verify that the content of the asset matches the latest on GitHub...
 				done()
 			})
 		})
