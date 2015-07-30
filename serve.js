@@ -111,8 +111,12 @@ function serve (cfg) {
 
 	web.use(helpers.serveCode(400))
 
-	init()
+	return init()
 		.catch(state.log("Can't init", true))
+		.then(function (gitListener) {
+			return { server: server
+				, git: gitListener }
+		})
 }
 
 function warnDevMid (msg) {
