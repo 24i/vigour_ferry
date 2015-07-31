@@ -77,7 +77,6 @@ function syncAssets (config) {
 				if (error) {
 					reject(error)
 				} else {
-					console.log("Copying assets")
 					resolve(fs.expandStars(config.assets, process.cwd())
 						.then(flatten)
 						.then(function (newAssets) {
@@ -86,7 +85,9 @@ function syncAssets (config) {
 							newAssets['package.json'] = true
 							for (key in newAssets) {
 								arr.push(cp(path.join(process.cwd(), key)
-									, path.join(config.releaseRepo.absPath, key)))
+									, path.join(config.releaseRepo.absPath, key)).catch(function () {
+										console.log(arguments)
+									}))
 							}
 							return Promise.all(arr)
 						})

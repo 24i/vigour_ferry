@@ -38,19 +38,17 @@ exports.cloneRelease = function (config) {
 			+ ":" + config.git.username
 			+ "/" + config.releaseRepo.name
 			+ ".git"
-		, config.releaseRepo.absPath).then(function(){
-		return helpers.sh(
-      "ssh-agent bash -c 'ssh-add ~/.ssh/id_rsa_machines; git push --repo=git@github.com:vigourmachines/vigour-example-packer-release.git'"
-	  )
-	})
+		, config.releaseRepo.absPath)
 }
 
 exports.commitRelease = function (config) {
 	return helpers.sh('git add .'
 			, { cwd: config.releaseRepo.absPath })
 		.then(function () {
-			return helpers.sh("git commit -m 'new version'"
+			return helpers.sh('git commit -m "new version"'
 			, { cwd: config.releaseRepo.absPath })
+		}).catch(function (argument) {
+			console.log(arguments)
 		})
 		.then(function () {
 			return exports.pushu(config.releaseRepo.absPath)
@@ -82,7 +80,7 @@ exports.newBranch = function (branch, repo) {
 }
 
 exports.pushu = function (repo) {
-	return helpers.sh('git push -u'
+	return helpers.sh("ssh-agent bash -c 'ssh-add ~/.ssh/id_rsa_machines; git push -u --repo=git@github.com:vigourmachines/vigour-example-packer-release.git'"
 	, { cwd: repo })
 }
 
