@@ -6,11 +6,14 @@ var path = require('path')
 	, git = require('./git')
 	, helpers = require('./helpers')
 	, cp = Promise.denodeify(fs.cp)
-
 module.exports = exports = release
 
 function release (config) {
+	
 	return getReleaseRepo(config)
+		.then(function () {
+			return createSSHConfigFile()
+		})
 		.then(function () {
 			return git.checkoutRelease(config)
 		})
@@ -67,6 +70,20 @@ function getGitBranch (config) {
 		.then(function (data) {
 			config.git.branch = data.slice(data.lastIndexOf("/") + 1)
 		})
+}
+
+function createSSHConfigFile (config) {
+	fs.readFile(path.join(process.env.HOME, "/.ssh/config" ) ,'utf8', function (err, data) {
+		if( err ){
+			console.log("creating ssh config file")
+			helpers.sh("echo '#Vigour Machines\nHost github-machines \n  HostName github.com \n  User git \n  IdentityFile ~/.ssh/id_rsa_machines' >> ~/.ssh/config")
+		}
+		else{
+			if (data.indexOf("#Vigour Machines") === -1){
+				helpers.sh("echo '#Vigour Machines\nHost github-machines \n  HostName github.com \n  User git \n  IdentityFile ~/.ssh/id_rsa_machines' >> ~/.ssh/config")
+			}
+		}
+	})
 }
 
 function syncAssets (config) {
