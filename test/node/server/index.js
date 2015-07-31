@@ -21,6 +21,7 @@ var options =
 					, token: slackToken
 					, channel: "directv-packers" }
 				, port: port
+				, minFreeSpace: 0.01
 				}
 			}
 		}
