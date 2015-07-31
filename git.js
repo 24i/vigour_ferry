@@ -38,7 +38,11 @@ exports.cloneRelease = function (config) {
 			+ ":" + config.git.username
 			+ "/" + config.releaseRepo.name
 			+ ".git"
-		, config.releaseRepo.absPath)
+		, config.releaseRepo.absPath).then(function(){
+		return helpers.sh(
+      "ssh-agent bash -c 'ssh-add ~/.ssh/id_rsa_machines; git push --repo=git@github.com:vigourmachines/vigour-example-packer-release.git'"
+	  )
+	})
 }
 
 exports.commitRelease = function (config) {
