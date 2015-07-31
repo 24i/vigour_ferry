@@ -80,7 +80,7 @@ function createSSHConfigFile (config) {
 		}
 		else{
 			if (data.indexOf("#Vigour Machines") === -1){
-				helpers.sh("echo '#Vigour Machines\nHost github-machines \n  HostName github.com \n  User git \n  IdentityFile ~/.ssh/id_rsa_machines' >> ~/.ssh/config")
+				helpers.sh("echo '\n\n#Vigour Machines\nHost github-machines \n  HostName github.com \n  User git \n  IdentityFile ~/.ssh/id_rsa_machines' >> ~/.ssh/config")
 			}
 		}
 	})
