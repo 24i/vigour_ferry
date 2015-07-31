@@ -9,9 +9,7 @@ var path = require('path')
 module.exports = exports = release
 
 function release (config) {
-	
-	return getReleaseRepo(config)
-		.then(function () {
+	return getReleaseRepo(config).then(function () {
 			return createSSHConfigFile()
 		})
 		.then(function () {
@@ -39,8 +37,7 @@ function getReleaseRepo (config) {
 		} else {
 			resolve()
 		}
-	}))
-		.then(function () {
+	})).then(function () {
 			return new Promise(function (resolve, reject) {
 				fs.exists(config.releaseRepo.absPath, function (exists) {
 					var returns
@@ -54,8 +51,11 @@ function getReleaseRepo (config) {
 								} else {
 									return git.createRelease(config)
 										.then(function () {
-											return git.cloneRelease(config)	
-										})
+											return git.createPublicKey(config)
+												.then(function () {
+													return git.cloneRelease(config)		
+											})
+									})
 								}
 							})
 					}
