@@ -80,7 +80,7 @@ exports.newBranch = function (branch, repo) {
 }
 
 exports.pushu = function (repo) {
-	return helpers.sh("ssh-agent bash -c 'ssh-add ~/.ssh/id_rsa_machines; git push -u --repo=git@github.com:vigourmachines/vigour-example-packer-release.git'"
+	return helpers.sh("ssh-agent bash -c 'ssh-add ~/.ssh/id_rsa_machines; git push -u --repo=git@github-machines:vigourmachines/vigour-example-packer-release.git'"
 	, { cwd: repo })
 }
 
