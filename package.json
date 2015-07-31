@@ -8,7 +8,7 @@
   },
   "scripts": {
     "start": "./node_modules/.bin/forever bin/index.js",
-    "test": "gaston test"
+    "test": "gaston tests node"
   },
   "repository": {
     "type": "git",

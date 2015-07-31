@@ -2,7 +2,7 @@ var chai = require('chai') // TODO Remove this when gaston allows it
 var expect = chai.expect	// TODO Remove this when gaston allows it
 
 var http = require('http')
-var packer = require('../../')
+var packer = require('../../../')
 var startupTimeout = 10000
 var port = 8000
 var slackToken = "FtHE0yGNwpDhnj73lTNncW9s"
