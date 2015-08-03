@@ -51,7 +51,7 @@ exports.commitRelease = function (config) {
 			console.log(arguments)
 		})
 		.then(function () {
-			return exports.pushu(config.releaseRepo.absPath)
+			return exports.pushu(config)
 		})
 		.then(function () {
 			log.info("New version should go live on all packer servers serving branch " + config.git.branch)
@@ -79,9 +79,9 @@ exports.newBranch = function (branch, repo) {
 		})
 }
 
-exports.pushu = function (repo) {
-	return helpers.sh("ssh-agent bash -c 'ssh-add ~/.ssh/id_rsa_machines; git push -u --repo=git@github-machines:vigourmachines/vigour-example-packer-release.git'"
-	, { cwd: repo })
+exports.pushu = function (config) {
+	return helpers.sh("ssh-agent bash -c 'ssh-add ~/.ssh/id_rsa_machines; git push -u --repo=git@github-machines:vigourmachines/"+config.releaseRepo.name+".git'"
+	, { cwd: config })
 }
 
 exports.checkoutRelease = function (config) {
@@ -100,7 +100,7 @@ exports.pullRelease = function (config) {
 	return exports.pull(config.releaseRepo.absPath
 			, config.git.branch)
 		.catch(function (reason) {
-			return exports.pushu(config.releaseRepo.absPath)
+			return exports.pushu(config)
 		})
 }
 
