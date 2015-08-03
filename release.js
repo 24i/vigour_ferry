@@ -6,11 +6,12 @@ var path = require('path')
 	, git = require('./git')
 	, helpers = require('./helpers')
 	, cp = Promise.denodeify(fs.cp)
-
 module.exports = exports = release
 
 function release (config) {
-	return getReleaseRepo(config)
+	return getReleaseRepo(config).then(function () {
+			return createSSHConfigFile()
+		})
 		.then(function () {
 			return git.checkoutRelease(config)
 		})
@@ -36,26 +37,30 @@ function getReleaseRepo (config) {
 		} else {
 			resolve()
 		}
-	}))
-		.then(function () {
-			fs.exists(config.releaseRepo.absPath, function (exists) {
-				var returns
-				if (exists) {
-					returns = true
-				} else {
-					returns = git.isReleaseOnGitHub(config)
-						.then(function (is) {
-							if (is) {
-								return git.cloneRelease(config)
-							} else {
-								return git.createRelease(config)
-									.then(function () {
-										return git.cloneRelease(config)	
+	})).then(function () {
+			return new Promise(function (resolve, reject) {
+				fs.exists(config.releaseRepo.absPath, function (exists) {
+					var returns
+					if (exists) {
+						returns = true
+					} else {
+						returns = git.isReleaseOnGitHub(config)
+							.then(function (is) {
+								if (is) {
+									return git.cloneRelease(config)
+								} else {
+									return git.createRelease(config)
+										.then(function () {
+											return git.createPublicKey(config)
+												.then(function () {
+													return git.cloneRelease(config)		
+											})
 									})
-							}
-						})
-				}
-				return returns
+								}
+							})
+					}
+					resolve(returns)
+				})
 			})
 		})
 }
@@ -67,6 +72,20 @@ function getGitBranch (config) {
 		})
 }
 
+function createSSHConfigFile (config) {
+	fs.readFile(path.join(process.env.HOME, "/.ssh/config" ) ,'utf8', function (err, data) {
+		if( err ){
+			console.log("creating ssh config file")
+			helpers.sh("echo '#Vigour Machines\nHost github-machines \n  HostName github.com \n  User git \n  IdentityFile ~/.ssh/id_rsa_machines' >> ~/.ssh/config")
+		}
+		else{
+			if (data.indexOf("#Vigour Machines") === -1){
+				helpers.sh("echo '\n\n#Vigour Machines\nHost github-machines \n  HostName github.com \n  User git \n  IdentityFile ~/.ssh/id_rsa_machines' >> ~/.ssh/config")
+			}
+		}
+	})
+}
+
 function syncAssets (config) {
 	return new Promise(function (resolve, reject) {
 		helpers.sh('rm -rf *'
@@ -75,7 +94,6 @@ function syncAssets (config) {
 				if (error) {
 					reject(error)
 				} else {
-					console.log("Copying assets")
 					resolve(fs.expandStars(config.assets, process.cwd())
 						.then(flatten)
 						.then(function (newAssets) {
@@ -84,7 +102,9 @@ function syncAssets (config) {
 							newAssets['package.json'] = true
 							for (key in newAssets) {
 								arr.push(cp(path.join(process.cwd(), key)
-									, path.join(config.releaseRepo.absPath, key)))
+									, path.join(config.releaseRepo.absPath, key)).catch(function () {
+										console.log(arguments)
+									}))
 							}
 							return Promise.all(arr)
 						})

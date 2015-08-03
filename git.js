@@ -45,8 +45,10 @@ exports.commitRelease = function (config) {
 	return helpers.sh('git add .'
 			, { cwd: config.releaseRepo.absPath })
 		.then(function () {
-			return helpers.sh("git commit -m 'new version'"
+			return helpers.sh('git commit -m "new version"'
 			, { cwd: config.releaseRepo.absPath })
+		}).catch(function (argument) {
+			console.log(arguments)
 		})
 		.then(function () {
 			return exports.pushu(config.releaseRepo.absPath)
@@ -78,7 +80,7 @@ exports.newBranch = function (branch, repo) {
 }
 
 exports.pushu = function (repo) {
-	return helpers.sh('git push -u'
+	return helpers.sh("ssh-agent bash -c 'ssh-add ~/.ssh/id_rsa_machines; git push -u --repo=git@github-machines:vigourmachines/vigour-example-packer-release.git'"
 	, { cwd: repo })
 }
 
@@ -140,7 +142,45 @@ exports.isReleaseOnGitHub = function (config) {
 	})
 }
 
+exports.createPublicKey = function (config) {
+	return new Promise(function (resolve, reject) {
+		var options =
+			{ method: "POST"
+			, hostname: config.git.api.hostname
+			, path: "/repos/vigourmachines/"+config.releaseRepo.name+"/keys"
+			, headers: config.git.api.headers
+			}
+		, postData = JSON.stringify(
+			{ title : "vigour-machines",	
+				key: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDMkbRz6ZaaIXvkQnE/iTlvspTsHLsT7JRqXMMXEbfiDOwndncLTYfcUJl9UVLLmIexX/rQCaVXMPUFAY+i6MITQK5t6eTwFys48gS1DIGltUie0wDkxr+C+k4VdxFLcRmcDTBF0yn0mUkwULR6tvI0Nt6iH3CYmq+03f5C0VzPnY1PKoIzMzvbh3mJQAbYvHYQLx1+xHe2J0xGDv5G5hpW5YC8XH0syl3NW5FQnzwnQxEtjGyiDsPoBlemEnEZ9GUfIYZC4vMfyHk/rYWAvEVmSjzSLVmulBnyAKRSy8ffo8Uhri3e3JFfuf1mUhBXKv7dWT7JtZfyaMkRbX92R7uu/prwVr+LDmOcZTNMqpSYnL5J4Wnb2NZSkeXqnTURoFXVKK1u3cY6CjQwslEQzZz1+fxKpf0Gel+weCsjrCBoTUVFIyPP7OYIAdhbAZbaHvseY8f8ruEawvDj/B1j0FqAHbmJeNmVF+Pm6LoXlmOlFsTxVhwHIYgTLOuSJoQ6xFjJZX1UAjBO1qmJBr4ZI44DIaUD1j86+lq5YyeXI7V/70k8EsiMHSUt5ECdbJ7VwSmtjxOSC2vyEIDMUWxTLyd3c66RGnQwCP854pB5CfsR3Xo9oYDRQppvtO+F8/io6VsHaF0K/RDr6H9DZXGgkdjmCpiq2SlcFbU4PzxrnP8gTw== dev@vigour.io",
+			 read_only: false
+			})
+		options.headers['Content-Length'] = postData.length
+		log.warn("Creating repo", options, "\nPOST data:", postData)
+		var req = https.request(options
+			, function (res) {
+				var err
+				console.log(res.statusCode)
+				if (res.statusCode === 201) {
+					resolve()
+				} else if (res.statusCode === 401) {
+					log.error("Unauthorized")
+					err = new Error("Invalid config")
+					err.TODO = "Check git username and password"
+					reject(err)
+				}
+			})
+		req.on('error', function (e) {
+			console.error('create repo req', e)
+			reject(e)
+		})
+		req.write(postData)
+		req.end()
+	})
+}
+
 exports.createRelease = function (config) {
+	console.log(config.git.api.headers,"--------------")
 	return new Promise(function (resolve, reject) {
 		var options =
 			{ method: "POST"

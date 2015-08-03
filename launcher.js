@@ -18,6 +18,11 @@ module.exports = exports = function (opts) {
 		config.releaseRepo.absPath = path.join(
 			path.dirname(process.cwd())
 			, config.releaseRepo.name)
+		config.git.api.headers.Authorization = "Basic "
+			+ btoa(config.git.username
+			+ ":"
+			+ config.git.password)
+
 	} else if (config.deploy) {
 		action = deploy
 	} else {
