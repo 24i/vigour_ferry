@@ -45,7 +45,8 @@
     "promise": "^6.0.0",
     "uglify-js": "^2.4.15",
     "vigour-fs": "git+ssh://git@github.com:vigour-io/vigour-fs.git",
-    "vigour-js": "git+ssh://git@github.com:vigour-io/vigour-js.git"
+    "vigour-js": "git+ssh://git@github.com:vigour-io/vigour-js.git",
+    "pliant": "git+ssh://git@github.com:vigour-io/pliant.git"
   },
   "homepage": "https://github.com/vigour-io/vigour-packer",
   "devDependencies": {

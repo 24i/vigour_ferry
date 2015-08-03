@@ -1,6 +1,5 @@
-var temp = require('./temp')
-	, pkg = require('./package.json')
+var pliant = require('pliant')
 	, config = require("./config")
 	, packer = require('./launcher')
 
-module.exports = exports = temp.makeModule(pkg, config, packer)
+module.exports = exports = pliant.fn(packer, config)

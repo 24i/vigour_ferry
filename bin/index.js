@@ -1,8 +1,7 @@
 #!/usr/bin/env node
 
-var temp = require('../temp')
-	, pkg = require('../package.json')
+var pliant = require('pliant')
 	, config = require("../config")
 	, packer = require('../launcher')
 
-temp.makeBin(pkg, config, packer)
+pliant.bin(packer, config)
