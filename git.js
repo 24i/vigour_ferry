@@ -58,7 +58,7 @@ exports.commitRelease = function (config) {
 		})
 }
 
-exports.newBranch = function (branch, repo) {
+exports.newBranch = function (branch, config) {
 	return helpers.sh('git checkout -b ' + branch
 			, { cwd: repo })
 		.then(function () {
@@ -75,13 +75,13 @@ exports.newBranch = function (branch, repo) {
 					, { cwd: repo })
 		})
 		.then(function () {
-			return exports.pushu(repo)
+			return exports.pushu(config)
 		})
 }
 
 exports.pushu = function (config) {
 	return helpers.sh("ssh-agent bash -c 'ssh-add ~/.ssh/id_rsa_machines; git push -u --repo=git@github-machines:vigourmachines/"+config.releaseRepo.name+".git'"
-	, { cwd: config })
+	, { cwd: config.releaseRepo.absPath })
 }
 
 exports.checkoutRelease = function (config) {
@@ -91,7 +91,7 @@ exports.checkoutRelease = function (config) {
 					, config.releaseRepo.absPath)
 				.catch(function () {
 					return exports.newBranch(config.git.branch
-						, config.releaseRepo.absPath)
+						, config)
 				})
 		})
 }
