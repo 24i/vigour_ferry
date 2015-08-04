@@ -47,41 +47,44 @@ exports.commitRelease = function (config) {
 		.then(function () {
 			return helpers.sh('git commit -m "new version"'
 			, { cwd: config.releaseRepo.absPath })
-		}).catch(function (argument) {
-			console.log(arguments)
 		})
 		.then(function () {
-			return exports.pushu(config)
+			return exports.pushu(config.releaseRepo.absPath, config.releaseRepo.name)
 		})
 		.then(function () {
 			log.info("New version should go live on all packer servers serving branch " + config.git.branch)
 		})
 }
 
-exports.newBranch = function (branch, config) {
+exports.newBranch = function (branch, repoPath, repoName) {
 	return helpers.sh('git checkout -b ' + branch
-			, { cwd: repo })
+			, { cwd: repoPath })
 		.then(function () {
-			return writeFile(path.join(repo, "README.md")
+			return writeFile(path.join(repoPath, "README.md")
 			, "Just something to push for branch creation to be possible"
 			, 'utf8')
 		})
 		.then(function () {
 			return helpers.sh('git add .'
-				, { cwd: repo })
+				, { cwd: repoPath })
 		})
 		.then(function () {
 			return helpers.sh("git commit -m 'initial commit'"
-					, { cwd: repo })
+					, { cwd: repoPath })
 		})
 		.then(function () {
-			return exports.pushu(config)
+			return exports.pushu(repoPath, repoName)
 		})
 }
 
-exports.pushu = function (config) {
-	return helpers.sh("ssh-agent bash -c 'ssh-add ~/.ssh/id_rsa_machines; git push -u --repo=git@github-machines:vigourmachines/"+config.releaseRepo.name+".git'"
-	, { cwd: config.releaseRepo.absPath })
+exports.pushu = function (repoPath, repoName) {
+	return helpers.sh("ssh-agent bash -c 'ssh-add ~/.ssh/id_rsa_machines; git push -u --repo=git@github-machines:vigourmachines/" + repoName + ".git'"
+	, { cwd: repoPath })
+}
+
+exports.setUpstream = function (branch, repoPath) {
+	return helpers.sh("git branch --set-upstream-to=origin/" + branch + " " + branch
+		, { cwd: repoPath })
 }
 
 exports.checkoutRelease = function (config) {
@@ -89,10 +92,20 @@ exports.checkoutRelease = function (config) {
 		.then(function () {
 			return exports.checkout(config.git.branch
 					, config.releaseRepo.absPath)
-				.catch(function () {
+				.then(function () {
+					return exports.setUpstream(config.git.branch
+							, config.releaseRepo.absPath)
+						.catch(function () {
+							// ignore
+							return true
+						})
+				}
+				, function () {
 					return exports.newBranch(config.git.branch
-						, config)
+						, config.releaseRepo.absPath
+						, config.releaseRepo.name)
 				})
+				
 		})
 }
 
@@ -100,7 +113,7 @@ exports.pullRelease = function (config) {
 	return exports.pull(config.releaseRepo.absPath
 			, config.git.branch)
 		.catch(function (reason) {
-			return exports.pushu(config)
+			return exports.pushu(config.releaseRepo.absPath, config.releaseRepo.name)
 		})
 }
 
@@ -156,10 +169,12 @@ exports.createPublicKey = function (config) {
 			 read_only: false
 			})
 		options.headers['Content-Length'] = postData.length
-		log.warn("Creating repo", options, "\nPOST data:", postData)
+		log.warn("Creating public key", options, "\nPOST data:", postData)
 		var req = https.request(options
 			, function (res) {
 				var err
+				var total = ""
+				res.setEncoding('utf8')
 				console.log(res.statusCode)
 				if (res.statusCode === 201) {
 					resolve()
@@ -168,10 +183,17 @@ exports.createPublicKey = function (config) {
 					err = new Error("Invalid config")
 					err.TODO = "Check git username and password"
 					reject(err)
+				} else {
+					res.on('data', function (chunk) {
+						total += chunk
+					})
+					res.on('end', function () {
+						reject(total)
+					})
 				}
 			})
 		req.on('error', function (e) {
-			console.error('create repo req', e)
+			console.error('create public key req', e)
 			reject(e)
 		})
 		req.write(postData)

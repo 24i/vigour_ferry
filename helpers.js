@@ -87,12 +87,13 @@ exports.sh = function (command, opts, cb) {
 		opts.cwd = __dirname	
 	}
 	p = new Promise(function (resolve, reject) {
-		log.info('Executing `', command, '`\n\tCWD:', opts.cwd)
+		log.info('Executing ', command, '\n\tCWD:', opts.cwd)
 		proc.exec(command
 		, { cwd: opts.cwd }
 		, function (error, stdout, stderr) {
 			if (error) {
-				log.error(stderr)
+				// log.error("sh error", error)
+				log.error("sh stderr", stderr)
 				reject(error)
 			} else {
 				resolve(stdout)
