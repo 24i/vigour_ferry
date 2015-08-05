@@ -1,4 +1,5 @@
 var http = require('http')
+var log = require('npmlog')
 var packer = require('../../../')
 var startupTimeout = 10000
 var port = 8000
@@ -101,9 +102,9 @@ describe("Server", function () {
 			})
 			res.on('end', function () {
 				// TODO Check the actual contents of the string
-				var obj = JSON.stringify(total)
+				var obj = JSON.parse(total)
 				expect(obj.text).to.be.a.string
-				console.log("POST /status", total.text)
+				log.info("POST /status", obj.text)
 				done()
 			})
 		})
