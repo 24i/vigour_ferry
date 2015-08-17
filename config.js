@@ -84,6 +84,12 @@ config.items = {
 	, cli: "--akamai"
 	, desc: "Includes Akamai-specific 'Edge-Control' cache headers"
 	}
+, "vigour.packer.warn":
+	{ def: true
+	, env: "PACKER_WARN"
+	, cli: "--no-warn"
+	, desc: "Disables slack and mail warnings (useful for testing)"
+	}
 
 // Mail
 , "vigour.packer.mail.fromAddress":

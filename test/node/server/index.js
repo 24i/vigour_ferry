@@ -23,6 +23,7 @@ var options =
 					, channel: "directv-packers" }
 				, port: port
 				, akamai: true
+				, warn: false
 				}
 			}
 		}

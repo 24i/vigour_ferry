@@ -106,92 +106,96 @@ ErrorM.prototype.warnDev = function (msg) {
       msg = "Unstringifiable"
     }
   }
-  return Promise.all([
-    (new Promise(function (resolve, reject) {
-      if (self.misconfigured) {
-        self.misconfigured.TODO = "check mail fromAddress, to, username and password"
-        reject(self.misconfigured)
-      } else {
-        if (msg) {
-          self.mailOptions.text = msg
+  if (self.opts.warn) {
+    return Promise.all([
+      (new Promise(function (resolve, reject) {
+        if (self.misconfigured) {
+          self.misconfigured.TODO = "check mail fromAddress, to, username and password"
+          reject(self.misconfigured)
+        } else {
+          if (msg) {
+            self.mailOptions.text = msg
+          }
+
+          // log.warn("\nSending email: "
+          //   , JSON.stringify(self.mailOptions, null, 2)
+          //   , "\n\n")
+
+          self.transporter.sendMail(self.mailOptions, function (err, info){
+            if (err) {
+             if (err.responseCode === 454) {
+              log.warn("Can't log into mail service")
+              err.TODO = "Check mail username and password"
+              return reject(err)
+             } else {
+              log.warn("Can't send mail")
+              err.TODO = "Check mail fromAddress and to"
+              return reject(err)
+             }
+            } else {
+             log.info('email sent to ' + self.mailOptions.to + ":\n" + info.response)
+             return resolve()
+            }
+          })
+        }
+      }))
+        .catch(function (reason) {
+          log.error("Can't send mail", reason)
+        })
+      , (new Promise(function (resolve, reject) {
+        try {
+          var postData = makePayload(machineIP, msg, self)
+            , options = {
+              hostname: 'hooks.slack.com'
+              , port: 443
+              , path: self.opts.slack.pathPart
+              , method: 'POST'
+              , headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'Content-Length': postData.length
+              }
+            }
+            , req
+        } catch (e) {
+          log.warn("Slack misconfigured")
+          e.TODO = "Check Slack id, token and channel"
+          return reject(e)
         }
 
-        // log.warn("\nSending email: "
-        //   , JSON.stringify(self.mailOptions, null, 2)
+        // log.warn("Sending slack message:"
+        //   , JSON.stringify(options, null, 2)
+        //   , "\n\n"
+        //   , postData
         //   , "\n\n")
 
-        self.transporter.sendMail(self.mailOptions, function (err, info){
-          if (err) {
-           if (err.responseCode === 454) {
-            log.warn("Can't log into mail service")
-            err.TODO = "Check mail username and password"
-            return reject(err)
-           } else {
-            log.warn("Can't send mail")
-            err.TODO = "Check mail fromAddress and to"
-            return reject(err)
-           }
-          } else {
-           log.info('email sent to ' + self.mailOptions.to + ":\n" + info.response)
-           return resolve()
-          }
-        })
-      }
-    }))
-      .catch(function (reason) {
-        log.error("Can't send mail", reason)
-      })
-    , (new Promise(function (resolve, reject) {
-      try {
-        var postData = makePayload(machineIP, msg, self)
-          , options = {
-            hostname: 'hooks.slack.com'
-            , port: 443
-            , path: self.opts.slack.pathPart
-            , method: 'POST'
-            , headers: {
-              'Content-Type': 'application/x-www-form-urlencoded',
-              'Content-Length': postData.length
+        req = https.request(options, function (res) {
+          var response = ""
+          res.on('error', reject)
+          res.on('data', function (chunk) {
+            response += chunk.toString()
+          })
+          res.on('end', function () {
+            var err
+            if (response === 'ok') {
+              log.info('slack message sent to ' + self.channel)
+              resolve()
+            } else {
+              err = new Error("Invalid Login")
+              err.TODO = "Check slack id and token"
+              reject(err)
             }
-          }
-          , req
-      } catch (e) {
-        log.warn("Slack misconfigured")
-        e.TODO = "Check Slack id, token and channel"
-        return reject(e)
-      }
-
-      // log.warn("Sending slack message:"
-      //   , JSON.stringify(options, null, 2)
-      //   , "\n\n"
-      //   , postData
-      //   , "\n\n")
-
-      req = https.request(options, function (res) {
-        var response = ""
-        res.on('error', reject)
-        res.on('data', function (chunk) {
-          response += chunk.toString()
+          })
         })
-        res.on('end', function () {
-          var err
-          if (response === 'ok') {
-            log.info('slack message sent to ' + self.channel)
-            resolve()
-          } else {
-            err = new Error("Invalid Login")
-            err.TODO = "Check slack id and token"
-            reject(err)
-          }
-        })
+        req.on('error', reject)
+        req.write(postData)
+        req.end()
+      })).catch(function (reason) {
+        log.error("Can't send Slack message", reason)
       })
-      req.on('error', reject)
-      req.write(postData)
-      req.end()
-    })).catch(function (reason) {
-      log.error("Can't send Slack message", reason)
-    })
-  ])
+    ])
+  } else {
+    return Promise.resolve()
+  }
 }
 
 function makePayload (i, m, self) {
