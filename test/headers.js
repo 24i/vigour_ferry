@@ -18,7 +18,6 @@ describe("Response headers", function () {
 		return new Promise(function (resolve, reject) {
 			var req = http.request(url, function (res) {
 				res.on('error', reject)
-				console.log("headers", res.headers['cache-control'])
 				resolve(res)
 			})
 			req.on('error', reject)
@@ -63,7 +62,7 @@ describe("Response headers", function () {
 	})
 
 	describe("/package.json", function () {
-		var url = base + "/"
+		var url = base + "/package.json"
 		var reqPromise
 		before(function(){
 			reqPromise = request(url)
