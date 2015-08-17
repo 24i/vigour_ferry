@@ -3,7 +3,7 @@ var path = require('path')
 	, fs = require('vigour-fs')
 	, readFile = Promise.denodeify(fs.readFile)
 	, writeFile = Promise.denodeify(fs.writeFile)
-	, appendFile = Promise.denodeify(fs.appendFile)
+	, prependFile = Promise.denodeify(fs.prependFile)
 	, chmod = Promise.denodeify(fs.chmod)
 	, flatten = require('vigour-js/util/flatten')
 	, git = require('./git')
@@ -83,11 +83,11 @@ function getGitBranch (config) {
 
 function createSSHConfigFile (config) {
 	var filePath = path.join(process.env.HOME, ".ssh", "config")
-	var text = "\n\n#Vigour Machines\nHost github-machines \n  HostName github.com \n  User git \n  IdentityFile ~/.ssh/id_rsa_machines"
+	var text = "#Vigour Machines\nHost github-machines \n  HostName github.com \n  User git \n  IdentityFile ~/.ssh/id_rsa_machines\n\n"
 	return readFile(filePath, 'utf8')
 		.then(function (data) {
 			if (data.indexOf(text) === -1){
-				return appendFile(filePath, text)
+				return prependFile(filePath, text)
 			}
 		}
 		, function (err) {
