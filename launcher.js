@@ -22,7 +22,7 @@ module.exports = exports = function (opts) {
 			+ btoa(config.git.username
 			+ ":"
 			+ config.git.password)
-
+		config.git.url = "git@github-machines"
 	} else if (config.deploy) {
 		action = deploy
 	} else {

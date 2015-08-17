@@ -169,7 +169,7 @@ config.items = {
 	, desc: "Port on which to listen for GitHub WebHooks"
 	}
 ,	"vigour.packer.git.url":
-	{ def: "git@github-machines"
+	{ def: "git@github.com"
 	, env: "GIT_URL"
 	, cli: "--git-hub <user@domain>"
 	, desc: "git@github.com"
