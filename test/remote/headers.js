@@ -24,7 +24,6 @@ describe("Response headers", function () {
 			req.end()
 		})
 	}
-
 	
 	describe("/", function () {
 		var url = base + "/"

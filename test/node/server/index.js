@@ -56,7 +56,6 @@ describe("Server", function () {
 				total += chunk
 			})
 			res.on('error', function (err) {
-				// TODO Fail if function gets called
 				expect(err).not.to.exist
 				done()
 			})
@@ -67,7 +66,6 @@ describe("Server", function () {
 			})
 		})
 		req.on('error', function (err) {
-			// TODO Fail if function gets called
 			expect(err).not.to.exist
 		})
 		req.end()
