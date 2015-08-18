@@ -104,6 +104,7 @@ function Version (sha, config) {
 				vConfig.parse(parsed.vigour
 					, parsed
 					, [{ 'repository.branch': 'branches' }])
+				self.version = parsed.version
 				return parsed
 			})
 	})

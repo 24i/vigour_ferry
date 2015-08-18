@@ -155,7 +155,8 @@ function serveStatus (req, res, next) {
 						du = Math.round(100*free/total) + "%"
 						text = "repo: " + config.git.repo
 							+ "\nbranch: " + config.git.branch
-							+ "\nlive: " + live.sha
+							+ "\nversion: " + live.version
+							+ "\nSHA: " + live.sha
 							+ "\nport: " + config.port
 							+ "\ngit port: " + config.git.port
 							+ "\nfreeSpace: " + du
