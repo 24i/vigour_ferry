@@ -78,7 +78,7 @@ exports.newBranch = function (branch, repoPath, repoName) {
 }
 
 exports.pushu = function (repoPath, repoName) {
-	return helpers.sh("ssh-agent bash -c 'ssh-add ~/.ssh/id_rsa_machines; git push -u --repo=git@github-machines:vigourmachines/" + repoName + ".git'"
+	return helpers.sh("ssh-agent bash -c 'ssh-add ~/.ssh/id_rsa_machines; git push -u --repo=git@github-machines:vigourmachines/" + repoName + ".git; ssh-add ~/.ssh/id_rsa'"
 	, { cwd: repoPath })
 }
 
