@@ -5,11 +5,13 @@ var readFile = Promise.denodeify(fs.readFile)
 var writeFile = Promise.denodeify(fs.writeFile)
 var prependFile = Promise.denodeify(fs.prependFile)
 var chmod = Promise.denodeify(fs.chmod)
+var stat = Promise.denodeify(fs.stat)
 var flatten = require('vigour-js/util/flatten')
 var git = require('./git')
 var helpers = require('./helpers')
 var cp = Promise.denodeify(fs.cp)
 var log = require('npmlog')
+
 module.exports = exports = release
 
 function release (config) {
@@ -112,11 +114,11 @@ function syncAssets (config) {
             .then(function (newAssets) {
               var key
               var arr = []
+              var filePath
               newAssets['package.json'] = true
               for (key in newAssets) {
-                arr.push(cp(path.join(process.cwd(), key)
-                  , path.join(config.releaseRepo.absPath, key))
-                )
+                filePath = path.join(process.cwd(), key)
+                arr.push(copyNonEmpty(filePath, path.join(config.releaseRepo.absPath, key)))
               }
               return Promise.all(arr)
             })
@@ -124,4 +126,20 @@ function syncAssets (config) {
         }
       })
   })
+}
+
+function copyNonEmpty (src, dst) {
+  return stat(src)
+    .then(function (stats) {
+      if (stats.size === 0) {
+        var error = new Error('Empty file')
+        error.info = {
+          path: src
+        }
+        throw error
+      }
+    })
+    .then(function () {
+      return cp(src, dst)
+    })
 }
