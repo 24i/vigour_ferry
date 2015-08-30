@@ -20,7 +20,12 @@
     "assets",
     "manager"
   ],
-  "author": "vigour-io",
+  "author": "Vigour",
+  "contributors": [
+    {
+      "Shawn Inder <shawn@vigour.io>"
+    }
+  ],
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/vigour-io/vigour-packer/issues"
