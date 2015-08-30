@@ -22,13 +22,14 @@
   ],
   "author": "Vigour",
   "contributors": [
-    {
-      "Shawn Inder <shawn@vigour.io>"
-    }
+    "Shawn Inder <shawn@vigour.io>"
   ],
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/vigour-io/vigour-packer/issues"
+  },
+  "engines": {
+
   },
   "dependencies": {
     "blake2s": "^1.0.1",
