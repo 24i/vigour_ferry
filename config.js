@@ -15,7 +15,7 @@ config.items = {
 ,	"vigour.packer.maxHistory":
 	{ def: 5
 	, env: "PACKER_MAX_HISTORY"
-	, cli: "--history, --max-history <nb>"
+	, cli: "--history <nb>"
 	, desc: "Maximum number of versions to serve"
 	}
 ,	"vigour.packer.shaPlaceholder":
@@ -217,7 +217,7 @@ config.items = {
 	, desc: "Absolute path to app"
 	}
 
-// Release 
+// Release
 ,	"vigour.packer.release":
 	{ def: false
 	, env: "PACKER_RELEASE"
