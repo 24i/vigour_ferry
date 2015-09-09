@@ -2,7 +2,7 @@
   "name": "vigour-packer-server",
   "version": "1.1.10",
   "description": "Pushes new timestamps for apps to be notified of updates",
-  "main": "index.js",
+  "main": "lib/index.js",
   "bin": {
     "packer": "./bin/index.js"
   },
@@ -28,9 +28,7 @@
   "bugs": {
     "url": "https://github.com/vigour-io/vigour-packer/issues"
   },
-  "engines": {
-
-  },
+  "engines": {},
   "dependencies": {
     "blake2s": "^1.0.1",
     "body-parser": "^1.6.5",
@@ -44,16 +42,17 @@
     "follow-redirects": "0.0.3",
     "forever": "^0.14.1",
     "graceful-fs": "^3.0.6",
+    "lodash": "^3.10.1",
     "nodemailer": "^1.3.0",
     "npmlog": "^0.1.1",
     "oboe": "^2.1.1",
+    "pliant": "git+ssh://git@github.com:vigour-io/pliant.git",
     "pm2": "^0.12.14",
     "promise": "^6.0.0",
     "uglify-js": "^2.4.15",
     "vigour-fs": "git+ssh://git@github.com:vigour-io/vigour-fs.git",
     "vigour-js": "git+ssh://git@github.com:vigour-io/vigour-js.git",
-    "vjs": "git+ssh://git@github.com:vigour-io/vjs.git#master",
-    "pliant": "git+ssh://git@github.com:vigour-io/pliant.git"
+    "vjs": "git+ssh://git@github.com:vigour-io/vjs.git#master"
   },
   "homepage": "https://github.com/vigour-io/vigour-packer",
   "devDependencies": {
