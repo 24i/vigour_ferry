@@ -39,60 +39,60 @@ function serve (cfg) {
   web.use(compress())
   // web.use(logRequest)
   web.use(getUA)
-  web.get('/'
-    , getSha
-    , fbMeta
-    , addHeaders
-    , serveIndex
-    , helpers.serveCode(500))
-  web.post('/status'
-    , bodyParser.urlencoded({
+  web.get('/',
+    getSha,
+    fbMeta,
+    addHeaders,
+    serveIndex,
+    helpers.serveCode(500))
+  web.post('/status',
+    bodyParser.urlencoded({
       extended: true
-    })
-    , serveStatus
-    , helpers.serveCode(500))
-  web.get('/manifest.json'
-    , serveManifest
-    , addHeaders
-    , serveFile
-    , warnDevMid("Can't serve manifest.json")
-    , helpers.serveCode(500))
-  web.get('/favicon.ico'
-    , getSha
-    , prepFavicon
-    , serveFile
-    // , warnDevMid("Can't serve favicon.ico")
-    , helpers.serveCode(500))
+    }),
+    serveStatus,
+    helpers.serveCode(500))
+  web.get('/manifest.json',
+    serveManifest,
+    addHeaders,
+    serveFile,
+    warnDevMid("Can't serve manifest.json"),
+    helpers.serveCode(500))
+  web.get('/favicon.ico',
+    getSha,
+    prepFavicon,
+    serveFile,
+    // warnDevMid("Can't serve favicon.ico"),
+    helpers.serveCode(500))
   if (config.robots) {
-    web.get('/robots.txt'
-      , prepRobots
-      , serveFile
-      // , warnDevMid("Can't serve robots.txt")
-      , helpers.serveCode(500))
+    web.get('/robots.txt',
+      prepRobots,
+      serveFile,
+      // warnDevMid("Can't serve robots.txt"),
+      helpers.serveCode(500))
   }
   if (config.geo) {
-    web.get('/geo'
-      , prepGeo
-      , serveFile
-      , warnDevMid("Can't serve geo")
-      , helpers.serveCode(500))
+    web.get('/geo',
+      prepGeo,
+      serveFile,
+      warnDevMid("Can't serve geo"),
+      helpers.serveCode(500))
   }
-  web.get('/native/:sha/*'
-    , prepShaRequest
-    , getSha
-    , fbMeta
-    , getAsset
-    , addHeaders
-    , serveFile
-    , helpers.serveCode(404))
-  web.get('*'
-    , getSha
-    , fbMeta
-    , getAsset
-    , addHeaders
-    , serveFile
-    , notfound
-    , helpers.serveCode(500))
+  web.get('/native/:sha/*',
+    prepShaRequest,
+    getSha,
+    fbMeta,
+    getAsset,
+    addHeaders,
+    serveFile,
+    helpers.serveCode(404))
+  web.get('*',
+    getSha,
+    fbMeta,
+    getAsset,
+    addHeaders,
+    serveFile,
+    notfound,
+    helpers.serveCode(500))
 
   web.options('/', helpers.serveCode(200))
 
@@ -688,13 +688,13 @@ function serveFile (req, res, next) {
 
 function setHeaders (res, opts) {
   var maxage = 31556900  // ~ 1 year in seconds
-  res.set('Cache-Control', (opts && opts.cache)
-      ? 'public, no-transform, max-age=' + maxage
-      : 'public, max-age=0')
+  res.set('Cache-Control', (opts && opts.cache) ?
+    'public, no-transform, max-age=' + maxage :
+    'public, max-age=0')
   if (config.akamai) {
-    res.set('Edge-Control', (opts && opts.cdnCache)
-      ? '!no-cache, max-age=' + maxage
-      : 'public, max-age=0')
+    res.set('Edge-Control', (opts && opts.cdnCache) ?
+      '!no-cache, max-age=' + maxage :
+      'public, max-age=0')
   }
 
   // res.set("Cache-Control", "public, max-age=0")

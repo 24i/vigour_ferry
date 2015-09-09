@@ -1,17 +1,10 @@
-var fs = require('vigour-fs')
-  , log = require('npmlog')
-  , http = require('follow-redirects').http
-  , https = require('follow-redirects').https
-  , nodemailer = require('nodemailer')
-  , Promise = require('promise')
-  , helpers = require('./helpers')
-  , exists = function (path) {
-    return new Promise(function (resolve, reject) {
-      fs.exists(path, resolve)
-    })
-  }
-  , machineIP
-  , ipRequested = false
+var log = require('npmlog')
+var https = require('follow-redirects').https
+var nodemailer = require('nodemailer')
+var Promise = require('promise')
+var helpers = require('./helpers')
+var machineIP
+var ipRequested = false
 
 module.exports = exports = ErrorM
 
@@ -47,11 +40,11 @@ module.exports = exports = ErrorM
 // }
 
 function getIp (self, opts) {
-  log.info("Getting IP")
-  helpers.sh("dig +short myip.opendns.com @resolver1.opendns.com")
+  log.info('Getting IP')
+  helpers.sh('dig +short myip.opendns.com @resolver1.opendns.com')
     .then(function (ip) {
-      ip = ip.replace(/\s/g, "")
-      log.info("IP", ip)
+      ip = ip.replace(/\s/g, '')
+      log.info('IP', ip)
       self.machineIP = machineIP = ip
 
       self.mailOptions.subject = 'Warning from ' + ip
@@ -64,7 +57,7 @@ function ErrorM (opts) {
   self.opts = opts
   self.mailOptions = {}
   if (opts.slack) {
-    self.channel = "#" + opts.slack.channel
+    self.channel = '#' + opts.slack.channel
   }
   if ((opts.mail || opts.slack) && !machineIP && !ipRequested) {
     ipRequested = true
@@ -103,14 +96,14 @@ ErrorM.prototype.warnDev = function (msg) {
     try {
       msg = JSON.stringify(msg)
     } catch (e) {
-      msg = "Unstringifiable"
+      msg = 'Unstringifiable'
     }
   }
   if (self.opts.warn) {
     return Promise.all([
       (new Promise(function (resolve, reject) {
         if (self.misconfigured) {
-          self.misconfigured.TODO = "check mail fromAddress, to, username and password"
+          self.misconfigured.TODO = 'check mail fromAddress, to, username and password'
           reject(self.misconfigured)
         } else {
           if (msg) {
@@ -121,44 +114,44 @@ ErrorM.prototype.warnDev = function (msg) {
           //   , JSON.stringify(self.mailOptions, null, 2)
           //   , "\n\n")
 
-          self.transporter.sendMail(self.mailOptions, function (err, info){
+          self.transporter.sendMail(self.mailOptions, function (err, info) {
             if (err) {
-             if (err.responseCode === 454) {
-              log.warn("Can't log into mail service")
-              err.TODO = "Check mail username and password"
-              return reject(err)
-             } else {
-              log.warn("Can't send mail")
-              err.TODO = "Check mail fromAddress and to"
-              return reject(err)
-             }
+              if (err.responseCode === 454) {
+                log.warn('Can\'t log into mail service')
+                err.TODO = 'Check mail username and password'
+                return reject(err)
+              } else {
+                log.warn('Can\'t send mail')
+                err.TODO = 'Check mail fromAddress and to'
+                return reject(err)
+              }
             } else {
-             log.info('email sent to ' + self.mailOptions.to + ":\n" + info.response)
-             return resolve()
+              log.info('email sent to ' + self.mailOptions.to + ':\n' + info.response)
+              return resolve()
             }
           })
         }
       }))
         .catch(function (reason) {
           log.error("Can't send mail", reason)
-        })
-      , (new Promise(function (resolve, reject) {
+        }),
+      (new Promise(function (resolve, reject) {
         try {
           var postData = makePayload(machineIP, msg, self)
-            , options = {
-              hostname: 'hooks.slack.com'
-              , port: 443
-              , path: self.opts.slack.pathPart
-              , method: 'POST'
-              , headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-                'Content-Length': postData.length
-              }
+          var options = {
+            hostname: 'hooks.slack.com',
+            port: 443,
+            path: self.opts.slack.pathPart,
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/x-www-form-urlencoded',
+              'Content-Length': postData.length
             }
-            , req
+          }
+          var req
         } catch (e) {
-          log.warn("Slack misconfigured")
-          e.TODO = "Check Slack id, token and channel"
+          log.warn('Slack misconfigured')
+          e.TODO = 'Check Slack id, token and channel'
           return reject(e)
         }
 
@@ -169,7 +162,7 @@ ErrorM.prototype.warnDev = function (msg) {
         //   , "\n\n")
 
         req = https.request(options, function (res) {
-          var response = ""
+          var response = ''
           res.on('error', reject)
           res.on('data', function (chunk) {
             response += chunk.toString()
@@ -180,8 +173,8 @@ ErrorM.prototype.warnDev = function (msg) {
               log.info('slack message sent to ' + self.channel)
               resolve()
             } else {
-              err = new Error("Invalid Login")
-              err.TODO = "Check slack id and token"
+              err = new Error('Invalid Login')
+              err.TODO = 'Check slack id and token'
               reject(err)
             }
           })
@@ -190,8 +183,8 @@ ErrorM.prototype.warnDev = function (msg) {
         req.write(postData)
         req.end()
       })).catch(function (reason) {
-        log.error("Can't send Slack message", reason)
-      })
+          log.error('Can\'t send Slack message', reason)
+        })
     ])
   } else {
     return Promise.resolve()
@@ -199,8 +192,8 @@ ErrorM.prototype.warnDev = function (msg) {
 }
 
 function makePayload (i, m, self) {
-  return 'payload=' + JSON.stringify(
-    { text: i + ' ' + m
-    , channel: self.channel
-    })
+  return 'payload=' + JSON.stringify({
+    text: i + ' ' + m,
+    channel: self.channel
+  })
 }

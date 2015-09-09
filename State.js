@@ -1,12 +1,13 @@
 var path = require('path')
-  , Promise = require('promise')
-  , fs = require('graceful-fs')
-  , log = require('npmlog')
-  , helpers = require('./helpers')
-  , ErrorManager = require('./ErrorM')
-  , read = Promise.denodeify(fs.readFile)
-  , write = Promise.denodeify(fs.writeFile)
-  , _instance
+var Promise = require('promise')
+var fs = require('graceful-fs')
+var log = require('npmlog')
+var helpers = require('./helpers')
+var ErrorManager = require('./ErrorM')
+var read = Promise.denodeify(fs.readFile)
+var write = Promise.denodeify(fs.writeFile)
+var _instance
+
 module.exports = exports = State
 
 function State (config) {
@@ -25,7 +26,7 @@ State.prototype.log = function (msg, warnDev, ignore) {
   return function (reason) {
     self.error.print(msg, reason)
     if (warnDev && !reason.warned) {
-      self.warnDev(msg + "; reason: " + reason)
+      self.warnDev(msg + '; reason: ' + reason)
       reason.warned = true
     }
     if (ignore) {
@@ -42,9 +43,10 @@ State.prototype.rejectPending = function (reason) {
   this.settle(reason)
 }
 State.prototype.settle = function (err, data) {
-  var cb
-  while (cb = this.pending.shift()) {
+  var cb = this.pending.shift()
+  while (cb) {
     cb(err, data)
+    cb = this.pending.shift()
   }
 }
 State.prototype.get = helpers.getter(function () {
@@ -83,9 +85,9 @@ State.prototype.isAlreadyWarned = function () {
   return self.get()
     .catch(self.log("Can't state.get"))
     .then(function (data) {
-      return data.lastWarning
-        && (!data.lastGoLive
-          || data.lastWarning > data.lastGoLive)
+      return data.lastWarning &&
+        (!data.lastGoLive ||
+          data.lastWarning > data.lastGoLive)
     })
 }
 State.prototype.warnDev = function (msg, quiet) {
@@ -97,7 +99,7 @@ State.prototype.warnDev = function (msg, quiet) {
         return self.error.warnDev(msg)
           .catch(self.log("Can't error.warnDev"))
           .then(function () {
-            t = Date.now()
+            var t = Date.now()
             if (!quiet) {
               return self.get()
                 .catch(self.log("Can't state.get"))
@@ -107,9 +109,8 @@ State.prototype.warnDev = function (msg, quiet) {
                 })
             }
           })
-      }
-      else {
-        log.info("Already warned once since the last successful goLive", msg)
+      } else {
+        log.info('Already warned once since the last successful goLive', msg)
       }
     })
 }

@@ -1,5 +1,5 @@
 var pliant = require('pliant')
-	, config = require("./config")
-	, packer = require('./launcher')
+var config = require('./config')
+var packer = require('./launcher')
 
 module.exports = exports = pliant.fn(config, packer)
