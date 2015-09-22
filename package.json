@@ -8,7 +8,7 @@
   },
   "scripts": {
     "start": "./node_modules/.bin/forever bin/index.js",
-    "test": "gaston test node"
+    "test": "./node_modules/.bin/gaston test node"
   },
   "repository": {
     "type": "git",
@@ -56,7 +56,8 @@
   },
   "homepage": "https://github.com/vigour-io/vigour-packer",
   "devDependencies": {
-    "ncp": "^0.6.0"
+    "ncp": "^0.6.0",
+    "gaston": "git+ssh://git@github.com:vigour-io/gaston.git#master"
   },
   "gaston": {
     "port": 8080,
