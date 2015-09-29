@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 var pliant = require('pliant')
-var config = require('../config')
-var packer = require('../launcher')
+var config = require('../lib/config')
+var packer = require('../lib/launcher')
 
 pliant.bin(config, packer)
