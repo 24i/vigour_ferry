@@ -17,7 +17,7 @@ var options = {
         repo: 'directv-fl',
         username: 'vigourmachines',
         password: 'schaap99',
-        branch: 'master'
+        branch: 'develop'
       },
       slack: {
         id: 'T02AZ6MJS/B06224A5C/zdhGfLtB44ty0NJgIMptsaRW',

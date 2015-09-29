@@ -75,5 +75,8 @@
     "remote-logging": false,
     "require-paths": {},
     "source-maps": true
+  },
+  "standard": {
+    "globals": [ "describe", "it", "expect", "before", "after", "beforeEach", "afterEach", "sinon" ]
   }
 }

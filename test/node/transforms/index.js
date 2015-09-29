@@ -1,5 +1,3 @@
-/* global describe, it, expect, before */
-
 var path = require('path')
 var Transformer = require('../../../lib/Transformer')
 var transformer
