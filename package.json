@@ -1,5 +1,5 @@
 {
-  "name": "vigour-packer-server",
+  "name": "ferry",
   "version": "1.1.10",
   "description": "Pushes new timestamps for apps to be notified of updates",
   "main": "lib/index.js",
@@ -12,7 +12,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/vigour-io/vigour-packer/server"
+    "url": "https://github.com/vigour-io/ferry"
   },
   "keywords": [
     "vigour",
@@ -20,13 +20,13 @@
     "assets",
     "manager"
   ],
-  "author": "Vigour",
+  "author": "Vigour <dev@vigour.io>",
   "contributors": [
     "Shawn Inder <shawn@vigour.io>"
   ],
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/vigour-io/vigour-packer/issues"
+    "url": "https://github.com/vigour-io/ferry/issues"
   },
   "engines": {},
   "dependencies": {
@@ -50,11 +50,11 @@
     "pm2": "^0.12.14",
     "promise": "^6.0.0",
     "uglify-js": "^2.4.15",
-    "vigour-fs": "git+ssh://git@github.com:vigour-io/vigour-fs.git",
+    "vigour-fs": "^3.0.0",
     "vigour-js": "git+ssh://git@github.com:vigour-io/vigour-js.git",
     "vjs": "git+ssh://git@github.com:vigour-io/vjs.git#master"
   },
-  "homepage": "https://github.com/vigour-io/vigour-packer",
+  "homepage": "https://github.com/vigour-io/ferry",
   "devDependencies": {
     "ncp": "^0.6.0",
     "gaston": "git+ssh://git@github.com:vigour-io/gaston.git#master"

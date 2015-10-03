@@ -23,7 +23,7 @@ sudo npm install npm@2.10.1 -g
 sudo npm install forever -g
 
 # Clone repos
-git clone git@github.com:vigour-io/vigour-packer-server.git
+git clone git@github.com:vigour-io/ferry.git
 git clone git@github.com:shawninder/portProxy.git
 
 # Get certificates
@@ -37,8 +37,8 @@ nohup npm start -- 443 8000 $1 &
 cd ..
 
 # Launch packer server
-mv .package.json vigour-packer-server
-cd vigour-packer-server
+mv .package.json ferry
+cd ferry
 npm install
 cd server
 npm install
