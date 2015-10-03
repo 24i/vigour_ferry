@@ -1,6 +1,6 @@
 {
   "name": "ferry",
-  "version": "1.1.10",
+  "version": "2.0.0",
   "description": "Pushes new timestamps for apps to be notified of updates",
   "main": "lib/index.js",
   "bin": {
@@ -77,6 +77,15 @@
     "source-maps": true
   },
   "standard": {
-    "globals": [ "describe", "it", "expect", "before", "after", "beforeEach", "afterEach", "sinon" ]
+    "globals": [
+      "describe",
+      "it",
+      "expect",
+      "before",
+      "after",
+      "beforeEach",
+      "afterEach",
+      "sinon"
+    ]
   }
 }
