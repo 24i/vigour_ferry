@@ -1,4 +1,4 @@
-vigour-packer-server
+ferry
 ===
 
 ## Installation
@@ -12,7 +12,7 @@ vigour-packer-server
 or
 
 ```
-var packer = require('vigour-packer-server')
+var packer = require('ferry')
 packer(options)
 ```
 
