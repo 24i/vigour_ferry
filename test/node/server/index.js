@@ -1,5 +1,3 @@
-/* global describe, it, expect, before, after */
-
 var http = require('http')
 var log = require('npmlog')
 var Promise = require('promise')

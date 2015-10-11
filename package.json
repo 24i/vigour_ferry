@@ -8,7 +8,7 @@
   },
   "scripts": {
     "start": "./node_modules/.bin/forever bin/index.js",
-    "test": "./node_modules/.bin/gaston test node"
+    "test": "gaston test -r node"
   },
   "repository": {
     "type": "git",
@@ -52,12 +52,11 @@
     "uglify-js": "^2.4.15",
     "vigour-fs": "^3.0.0",
     "vigour-js": "git+ssh://git@github.com:vigour-io/vigour-js.git",
-    "vjs": "git+ssh://git@github.com:vigour-io/vjs.git#master"
+    "vjs": "git+ssh://git@github.com:vigour-io/vjs.git#develop"
   },
   "homepage": "https://github.com/vigour-io/ferry",
   "devDependencies": {
-    "ncp": "^0.6.0",
-    "gaston": "git+ssh://git@github.com:vigour-io/gaston.git#master"
+    "ncp": "^0.6.0"
   },
   "gaston": {
     "port": 8080,
