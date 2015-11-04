@@ -50,8 +50,7 @@
     "promise": "^6.1.0",
     "uglify-js": "^2.4.15",
     "vigour-fs": "^3.0.2",
-    "vigour-js": "^0.2.2",
-    "vigour-pliant": "^1.0.1"
+    "vigour-js": "^0.2.2"
   },
   "homepage": "https://github.com/vigour-io/ferry",
   "devDependencies": {
@@ -85,5 +84,262 @@
       "afterEach",
       "sinon"
     ]
+  },
+  "vigour": {
+    "buildDir": {
+      "val": "packerBuilt",
+      "env": "PACKER_BUILD_DIR",
+      "description": "Name to assign to build directory created within app"
+    },
+    "maxHistory": {
+      "val": 5,
+      "env": "PACKER_MAX_HISTORY",
+      "description": "Maximum number of versions to serve"
+    },
+    "shaPlaceholder": {
+      "val": "SHA",
+      "env": "PACKER_SHA_PLACEHOLDER",
+      "description": "Placeholder for SHA in css files needing rebasing"
+    },
+    "port": {
+      "val": 8000,
+      "env": "PACKER_PORT",
+      "description": "Port on which to listen for app clients"
+    },
+    "retryAfter": {
+      "val": 1,
+      "env": "PACKER_RETRY_AFTER",
+      "description": "OBSOLETE"
+    },
+    "minFreeSpace": {
+      "val": 0.15,
+      "env": "PACKER_MIN_SPACE",
+      "description": "Free space threshold for notifying dev"
+    },
+    "shaDir": {
+      "val": "shas",
+      "env": "PACKER_SHA_DIR",
+      "description": "Directory holding app clones"
+    },
+    "shaHistoryName": {
+      "val": "history.json",
+      "env": "PACKER_SHA_HISTORY_NAME",
+      "description": "Sha history file name"
+    },
+    "stateFileName": {
+      "val": "state.json",
+      "env": "PACKER_STATE_FILENAME",
+      "description": "Name of dynamic file containing state"
+    },
+    "robots": {
+      "val": true,
+      "env": "PACKER_ROBOTS",
+      "description": "Serves `ferry/robots.txt` on `GET /robots.txt` by default. Use --no-robots to serve the `robots.txt` from your app instead"
+    },
+    "geo": {
+      "val": true,
+      "env": "PACKER_GEO",
+      "description": "Serves `ferry/geo.json` on `GET /geo` by default. Use --no-geo to remove this feature"
+    },
+    "akamai": {
+      "val": false,
+      "env": "PACKER_AKAMAI",
+      "description": "Includes Akamai-specific 'Edge-Control' cache headers"
+    },
+    "warn": {
+      "val": true,
+      "env": "PACKER_WARN",
+      "description": "Disables slack and mail warnings (useful for testing)"
+    },
+
+    "mail": {
+      "fromAddress": {
+        "val": null,
+        "env": "MAIL_FROM",
+        "description": "E-mail address to use in the 'from' field"
+      },
+      "to": {
+        "val": null,
+        "env": "MAIL_TO",
+        "description": "Comma-separated list of e-mail addresses to contact"
+      },
+      "username": {
+        "val": null,
+        "env": "MAIL_USERNAME",
+        "description": "Username of e-mail account to authenticate as"
+      },
+      "password": {
+        "val": null,
+        "env": "MAIL_PASSWORD",
+        "description": "Password for account associated to vigour.packer.mail.username"
+      }
+    },
+
+    "slack": {
+      "id": {
+        "val": null,
+        "env": "SLACK_ID",
+        "description": "String identifying the slack service to contact"
+      },
+      "token": {
+        "val": null,
+        "env": "SLACK_TOKEN",
+        "description": "Token to use when authenticating slack requests"
+      },
+      "channel": {
+        "val": "packers",
+        "env": "SLACK_CHANNEL",
+        "description": "Slack channel to send warnings to, without the leading #"
+      }
+    },
+
+    "git": {
+      "owner": {
+        "val": null,
+        "env": "GIT_OWNER",
+        "description": "Username for the GitHub account that owns the app"
+      },
+      "repo": {
+        "val": null,
+        "env": "GIT_REPO",
+        "description": "App repository name"
+      },
+      "branch": {
+        "val": null,
+        "env": "GIT_BRANCH",
+        "description": "Branch of app to serve"
+      },
+      "username": {
+        "val": null,
+        "env": "GIT_USERNAME",
+        "description": "Username for the git account to clone with"
+      },
+      "password": {
+        "val": null,
+        "env": "GIT_PASSWORD",
+        "description": "Password for the account associated to vigour.packer.git.username"
+      },
+      "port": {
+        "val": 8443,
+        "env": "GIT_PORT",
+        "description": "Port on which to listen for GitHub WebHooks"
+      },
+      "url": {
+        "val": "git@github.com",
+        "env": "GIT_URL",
+        "description": "git@github.com"
+      },
+      "api": {
+        "hostname": {
+          "val": "api.github.com",
+          "env": "GIT_API_HOST",
+          "description": "api.github.com"
+        },
+        "headers": {
+          "Accept": {
+            "val": "application/vnd.github.v3+json",
+            "env": "GIT_ACCEPT",
+            "description": "application/vnd.github.v3+json"
+          },
+          "User-Agent": {
+            "val": "ferry",
+            "env": "GIT_UA",
+            "description": "User agent string packer should use when making requests to GitHub"
+          }
+        }
+      }
+    },
+
+    "cleanup": {
+      "val": false,
+      "env": "PACKER_CLEANUP",
+      "description": "Removes all downloaded and created assets, state.json, and history.json transformHistory.json is conserved"
+    },
+
+    "src": {
+      "val": false,
+      "env": "PACKER_SRC",
+      "description": "Absolute path to app"
+    },
+
+    "release": {
+      "val": false,
+      "env": "PACKER_RELEASE",
+      "description": "Commits assets declared in app's package.json to sepcified branch of release repo (<this_repo>-packer-release), creating it if needed"
+    },
+    "releaseRepo": {
+      "suffix": {
+        "val": "-packer-release",
+        "env": "PACKER_RELEASE_SUFFIX",
+        "description": "Suffix for release repo"
+      },
+      "name": {
+        "val": null,
+        "env": "PACKER_RELEASE_NAME",
+        "description": "Name of release repo"
+      },
+      "absPath": {
+        "val": null,
+        "env": "PACKER_RELEASE_ABS_PATH",
+        "description": "Path to release repo"
+      }
+    },
+
+    "deploy": {
+      "val": false,
+      "env": "PACKER_DEPLOY",
+      "description": "Install packer on remote machine"
+    },
+    "server": {
+      "ip": {
+        "val": null,
+        "env": "PACKER_SERVER_IP",
+        "description": "Deploys and launches a packer server for this app at provided IP"
+      },
+      "identity": {
+        "val": null,
+        "env": "PACKER_SERVER_IDENTITY",
+        "description": "Path to identity file to use when connecting to vigour.package.server.ip"
+      },
+      "ssh": {
+        "id": {
+          "val": null,
+          "env": "PACKER_SERVER_SSH_ID",
+          "description": "Path to SSH private key"
+        },
+        "key": {
+          "val": null,
+          "env": "PACKER_SERVER_SSH_KEY",
+          "description": "Path to SSH public key"
+        }
+      },
+      "ssl": {
+        "cert": {
+          "val": null,
+          "env": "PACKER_SERVER_SSL_CERT",
+          "description": "Path to SSL certificate"
+        },
+        "key": {
+          "val": null,
+          "env": "PACKER_SERVER_SSL_KEY",
+          "description": "Path to private key of SSL certificate"
+        },
+        "password": {
+          "val": null,
+          "env": "PACKER_SERVER_SSL_PASSWORD",
+          "description": "Password for SSL certificate"
+        }
+      },
+      "user": {
+        "val": null,
+        "env": "PACKER_SERVER_USER",
+        "description": "User to authenticate as on vigour.packer.server.ip"
+      },
+      "remoteHome": {
+        "val": null,
+        "env": "PACKER_SERVER_REMOTEHOME",
+        "description": "Path to home directory on remote machine where packer server should be installed"
+      }
+    }
   }
 }

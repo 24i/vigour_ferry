@@ -12,8 +12,9 @@ ferry
 or
 
 ```
-var packer = require('ferry')
-packer(options)
+var Ferry = require('ferry')
+var ferry = new Ferry(options)
+ferry.start()
 ```
 
 For a list of available options, see config.js

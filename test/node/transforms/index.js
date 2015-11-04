@@ -1,13 +1,14 @@
 var path = require('path')
+var Config = require('vigour-js/lib/config')
 var Transformer = require('../../../lib/Transformer')
 var transformer
 describe('transforms', function () {
   before(function () {
-    transformer = new Transformer({
+    transformer = new Transformer(new Config({
       assetRoot: path.join(__dirname, '..', '..', '..', 'files'),
       stateFileName: 'state.json',
       shaPlaceholder: 'SHA'
-    })
+    }))
   })
   it('rebase'
   , function () {
