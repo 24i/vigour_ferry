@@ -154,22 +154,22 @@
 
     "mail": {
       "fromAddress": {
-        "val": null,
+        "val": false,
         "env": "MAIL_FROM",
         "description": "E-mail address to use in the 'from' field"
       },
       "to": {
-        "val": null,
+        "val": false,
         "env": "MAIL_TO",
         "description": "Comma-separated list of e-mail addresses to contact"
       },
       "username": {
-        "val": null,
+        "val": false,
         "env": "MAIL_USERNAME",
         "description": "Username of e-mail account to authenticate as"
       },
       "password": {
-        "val": null,
+        "val": false,
         "env": "MAIL_PASSWORD",
         "description": "Password for account associated to vigour.packer.mail.username"
       }
@@ -177,12 +177,12 @@
 
     "slack": {
       "id": {
-        "val": null,
+        "val": false,
         "env": "SLACK_ID",
         "description": "String identifying the slack service to contact"
       },
       "token": {
-        "val": null,
+        "val": false,
         "env": "SLACK_TOKEN",
         "description": "Token to use when authenticating slack requests"
       },
@@ -195,27 +195,27 @@
 
     "git": {
       "owner": {
-        "val": null,
+        "val": false,
         "env": "GIT_OWNER",
         "description": "Username for the GitHub account that owns the app"
       },
       "repo": {
-        "val": null,
+        "val": false,
         "env": "GIT_REPO",
         "description": "App repository name"
       },
       "branch": {
-        "val": null,
+        "val": false,
         "env": "GIT_BRANCH",
         "description": "Branch of app to serve"
       },
       "username": {
-        "val": null,
+        "val": false,
         "env": "GIT_USERNAME",
         "description": "Username for the git account to clone with"
       },
       "password": {
-        "val": null,
+        "val": false,
         "env": "GIT_PASSWORD",
         "description": "Password for the account associated to vigour.packer.git.username"
       },
@@ -274,12 +274,12 @@
         "description": "Suffix for release repo"
       },
       "name": {
-        "val": null,
+        "val": false,
         "env": "PACKER_RELEASE_NAME",
         "description": "Name of release repo"
       },
       "absPath": {
-        "val": null,
+        "val": false,
         "env": "PACKER_RELEASE_ABS_PATH",
         "description": "Path to release repo"
       }
@@ -292,51 +292,51 @@
     },
     "server": {
       "ip": {
-        "val": null,
+        "val": false,
         "env": "PACKER_SERVER_IP",
         "description": "Deploys and launches a packer server for this app at provided IP"
       },
       "identity": {
-        "val": null,
+        "val": false,
         "env": "PACKER_SERVER_IDENTITY",
         "description": "Path to identity file to use when connecting to vigour.package.server.ip"
       },
       "ssh": {
         "id": {
-          "val": null,
+          "val": false,
           "env": "PACKER_SERVER_SSH_ID",
           "description": "Path to SSH private key"
         },
         "key": {
-          "val": null,
+          "val": false,
           "env": "PACKER_SERVER_SSH_KEY",
           "description": "Path to SSH public key"
         }
       },
       "ssl": {
         "cert": {
-          "val": null,
+          "val": false,
           "env": "PACKER_SERVER_SSL_CERT",
           "description": "Path to SSL certificate"
         },
         "key": {
-          "val": null,
+          "val": false,
           "env": "PACKER_SERVER_SSL_KEY",
           "description": "Path to private key of SSL certificate"
         },
         "password": {
-          "val": null,
+          "val": false,
           "env": "PACKER_SERVER_SSL_PASSWORD",
           "description": "Password for SSL certificate"
         }
       },
       "user": {
-        "val": null,
+        "val": false,
         "env": "PACKER_SERVER_USER",
         "description": "User to authenticate as on vigour.packer.server.ip"
       },
       "remoteHome": {
-        "val": null,
+        "val": false,
         "env": "PACKER_SERVER_REMOTEHOME",
         "description": "Path to home directory on remote machine where packer server should be installed"
       }
