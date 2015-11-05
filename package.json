@@ -134,12 +134,12 @@
     "robots": {
       "val": true,
       "env": "PACKER_ROBOTS",
-      "description": "Serves `ferry/robots.txt` on `GET /robots.txt` by default. Use --no-robots to serve the `robots.txt` from your app instead"
+      "description": "Serves `ferry/robots.txt` on `GET /robots.txt` by default. Use `--robots false` to serve the `robots.txt` from your app instead"
     },
     "geo": {
       "val": true,
       "env": "PACKER_GEO",
-      "description": "Serves `ferry/geo.json` on `GET /geo` by default. Use --no-geo to remove this feature"
+      "description": "Serves `ferry/geo.json` on `GET /geo` by default. Use `--geo false` to remove this feature"
     },
     "akamai": {
       "val": false,
