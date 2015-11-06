@@ -12,8 +12,9 @@ ferry
 or
 
 ```
-var packer = require('ferry')
-packer(options)
+var Ferry = require('ferry')
+var ferry = new Ferry(options)
+ferry.start()
 ```
 
 For a list of available options, see config.js
@@ -21,8 +22,8 @@ For a list of available options, see config.js
 ## Typical examples
 
 ### Releasing a new version of an app
-When declared as a dependency to another project, `npm install`ing said project will make an executable called `packer` available from the command line. Use it to release a version of that project:
-`packer -r -c package.json,.package.json`
+When declared as a dependency to another project, `npm install`ing said project will make an executable called `ferry` available from the command line. Use it to release a version of that project:
+`ferry --release --mergeFiles '[\"/absolute/path/to/package.json\",\"/absolute/path/to/.package.json\"]'`
 
-### Launching a packer server
-`npm start -- -c ../.package.json,.package.json -b dev &`
+### Launching a ferry
+`npm start -- --mergeFiles '[\"../.package.json\",\".package.json\"]' --git '{"branch":"dev"}' &`

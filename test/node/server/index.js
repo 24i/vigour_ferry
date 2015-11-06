@@ -3,37 +3,34 @@ var log = require('npmlog')
 var Promise = require('promise')
 var fs = require('vigour-fs')
 var readJSON = Promise.denodeify(fs.readJSON)
-var packer = require('../../../lib/')
-var startupTimeout = 10000
+var Ferry = require('../../../lib/')
+var startupTimeout = 20000
 var port = 8000
 var slackToken = 'FtHE0yGNwpDhnj73lTNncW9s'
 var options = {
-  vigour: {
-    packer: {
-      git: {
-        owner: 'vigourmachines',
-        repo: 'directv-fl',
-        username: 'vigourmachines',
-        password: 'schaap99',
-        branch: 'develop'
-      },
-      slack: {
-        id: 'T02AZ6MJS/B06224A5C/zdhGfLtB44ty0NJgIMptsaRW',
-        token: slackToken,
-        channel: 'directv-packers'
-      },
-      port: port,
-      akamai: true,
-      warn: false
-    }
-  }
+  git: {
+    owner: 'vigourmachines',
+    repo: 'directv-fl',
+    username: 'vigourmachines',
+    password: 'schaap99',
+    branch: 'develop'
+  },
+  slack: {
+    id: 'T02AZ6MJS/B06224A5C/zdhGfLtB44ty0NJgIMptsaRW',
+    token: slackToken,
+    channel: 'directv-packers'
+  },
+  port: port,
+  akamai: true,
+  warn: false
 }
 var servers
 
 describe('Server', function () {
   before(function (done) {
     this.timeout(startupTimeout)
-    packer(options)
+    var ferry = new Ferry(options)
+    ferry.start()
       .then(function (_servers) {
         servers = _servers
         done()
