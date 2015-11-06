@@ -36,7 +36,7 @@ nohup npm start -- 80 8000 &
 nohup npm start -- 443 8000 $1 &
 cd ..
 
-# Launch packer server
+# Launch ferry
 mv .package.json ferry
 cd ferry
 npm install

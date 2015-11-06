@@ -4,7 +4,7 @@
   "description": "Pushes new timestamps for apps to be notified of updates",
   "main": "lib/index.js",
   "bin": {
-    "packer": "./bin/index.js"
+    "ferry": "./bin/index.js"
   },
   "scripts": {
     "start": "./node_modules/.bin/forever bin/index.js",
@@ -87,68 +87,68 @@
   },
   "vigour": {
     "buildDir": {
-      "val": "packerBuilt",
-      "env": "PACKER_BUILD_DIR",
+      "val": "ferryBuilt",
+      "env": "FERRY_BUILD_DIR",
       "description": "Name to assign to build directory created within app"
     },
     "maxHistory": {
       "val": 5,
-      "env": "PACKER_MAX_HISTORY",
+      "env": "FERRY_MAX_HISTORY",
       "description": "Maximum number of versions to serve"
     },
     "shaPlaceholder": {
       "val": "SHA",
-      "env": "PACKER_SHA_PLACEHOLDER",
+      "env": "FERRY_SHA_PLACEHOLDER",
       "description": "Placeholder for SHA in css files needing rebasing"
     },
     "port": {
       "val": 8000,
-      "env": "PACKER_PORT",
+      "env": "FERRY_PORT",
       "description": "Port on which to listen for app clients"
     },
     "retryAfter": {
       "val": 1,
-      "env": "PACKER_RETRY_AFTER",
+      "env": "FERRY_RETRY_AFTER",
       "description": "OBSOLETE"
     },
     "minFreeSpace": {
       "val": 0.15,
-      "env": "PACKER_MIN_SPACE",
+      "env": "FERRY_MIN_SPACE",
       "description": "Free space threshold for notifying dev"
     },
     "shaDir": {
       "val": "shas",
-      "env": "PACKER_SHA_DIR",
+      "env": "FERRY_SHA_DIR",
       "description": "Directory holding app clones"
     },
     "shaHistoryName": {
       "val": "history.json",
-      "env": "PACKER_SHA_HISTORY_NAME",
+      "env": "FERRY_SHA_HISTORY_NAME",
       "description": "Sha history file name"
     },
     "stateFileName": {
       "val": "state.json",
-      "env": "PACKER_STATE_FILENAME",
+      "env": "FERRY_STATE_FILENAME",
       "description": "Name of dynamic file containing state"
     },
     "robots": {
       "val": true,
-      "env": "PACKER_ROBOTS",
+      "env": "FERRY_ROBOTS",
       "description": "Serves `ferry/robots.txt` on `GET /robots.txt` by default. Use `--robots false` to serve the `robots.txt` from your app instead"
     },
     "geo": {
       "val": true,
-      "env": "PACKER_GEO",
+      "env": "FERRY_GEO",
       "description": "Serves `ferry/geo.json` on `GET /geo` by default. Use `--geo false` to remove this feature"
     },
     "akamai": {
       "val": false,
-      "env": "PACKER_AKAMAI",
+      "env": "FERRY_AKAMAI",
       "description": "Includes Akamai-specific 'Edge-Control' cache headers"
     },
     "warn": {
       "val": true,
-      "env": "PACKER_WARN",
+      "env": "FERRY_WARN",
       "description": "Disables slack and mail warnings (useful for testing)"
     },
 
@@ -171,7 +171,7 @@
       "password": {
         "val": false,
         "env": "MAIL_PASSWORD",
-        "description": "Password for account associated to vigour.packer.mail.username"
+        "description": "Password for account associated to vigour.mail.username"
       }
     },
 
@@ -217,7 +217,7 @@
       "password": {
         "val": false,
         "env": "GIT_PASSWORD",
-        "description": "Password for the account associated to vigour.packer.git.username"
+        "description": "Password for the account associated to vigour.git.username"
       },
       "port": {
         "val": 8443,
@@ -244,7 +244,7 @@
           "User-Agent": {
             "val": "ferry",
             "env": "GIT_UA",
-            "description": "User agent string packer should use when making requests to GitHub"
+            "description": "User agent string ferry should use when making requests to GitHub"
           }
         }
       }
@@ -252,93 +252,93 @@
 
     "cleanup": {
       "val": false,
-      "env": "PACKER_CLEANUP",
+      "env": "FERRY_CLEANUP",
       "description": "Removes all downloaded and created assets, state.json, and history.json transformHistory.json is conserved"
     },
 
     "src": {
       "val": false,
-      "env": "PACKER_SRC",
+      "env": "FERRY_SRC",
       "description": "Absolute path to app"
     },
 
     "release": {
       "val": false,
-      "env": "PACKER_RELEASE",
+      "env": "FERRY_RELEASE",
       "description": "Commits assets declared in app's package.json to sepcified branch of release repo (<this_repo>-packer-release), creating it if needed"
     },
     "releaseRepo": {
       "suffix": {
         "val": "-packer-release",
-        "env": "PACKER_RELEASE_SUFFIX",
+        "env": "FERRY_RELEASE_SUFFIX",
         "description": "Suffix for release repo"
       },
       "name": {
         "val": false,
-        "env": "PACKER_RELEASE_NAME",
+        "env": "FERRY_RELEASE_NAME",
         "description": "Name of release repo"
       },
       "absPath": {
         "val": false,
-        "env": "PACKER_RELEASE_ABS_PATH",
+        "env": "FERRY_RELEASE_ABS_PATH",
         "description": "Path to release repo"
       }
     },
 
     "deploy": {
       "val": false,
-      "env": "PACKER_DEPLOY",
-      "description": "Install packer on remote machine"
+      "env": "FERRY_DEPLOY",
+      "description": "Install ferry on remote machine"
     },
     "server": {
       "ip": {
         "val": false,
-        "env": "PACKER_SERVER_IP",
-        "description": "Deploys and launches a packer server for this app at provided IP"
+        "env": "FERRY_IP",
+        "description": "Deploys and launches a ferry for this app at provided IP"
       },
       "identity": {
         "val": false,
-        "env": "PACKER_SERVER_IDENTITY",
-        "description": "Path to identity file to use when connecting to vigour.package.server.ip"
+        "env": "FERRY_IDENTITY",
+        "description": "Path to identity file to use when connecting to vigour.server.ip"
       },
       "ssh": {
         "id": {
           "val": false,
-          "env": "PACKER_SERVER_SSH_ID",
+          "env": "FERRY_SSH_ID",
           "description": "Path to SSH private key"
         },
         "key": {
           "val": false,
-          "env": "PACKER_SERVER_SSH_KEY",
+          "env": "FERRY_SSH_KEY",
           "description": "Path to SSH public key"
         }
       },
       "ssl": {
         "cert": {
           "val": false,
-          "env": "PACKER_SERVER_SSL_CERT",
+          "env": "FERRY_SSL_CERT",
           "description": "Path to SSL certificate"
         },
         "key": {
           "val": false,
-          "env": "PACKER_SERVER_SSL_KEY",
+          "env": "FERRY_SSL_KEY",
           "description": "Path to private key of SSL certificate"
         },
         "password": {
           "val": false,
-          "env": "PACKER_SERVER_SSL_PASSWORD",
+          "env": "FERRY_SSL_PASSWORD",
           "description": "Password for SSL certificate"
         }
       },
       "user": {
         "val": false,
-        "env": "PACKER_SERVER_USER",
-        "description": "User to authenticate as on vigour.packer.server.ip"
+        "env": "FERRY_USER",
+        "description": "User to authenticate as on vigour.server.ip"
       },
       "remoteHome": {
         "val": false,
-        "env": "PACKER_SERVER_REMOTEHOME",
-        "description": "Path to home directory on remote machine where packer server should be installed"
+        "env": "FERRY_REMOTEHOME",
+        "description": "Path to home directory on remote machine where ferry should be installed"
       }
     }
   }
