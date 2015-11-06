@@ -1,6 +1,6 @@
 {
   "name": "vigour-ferry",
-  "version": "2.0.1",
+  "version": "3.0.0",
   "description": "Pushes new timestamps for apps to be notified of updates",
   "main": "lib/index.js",
   "bin": {
@@ -151,7 +151,6 @@
       "env": "FERRY_WARN",
       "description": "Disables slack and mail warnings (useful for testing)"
     },
-
     "mail": {
       "fromAddress": {
         "val": false,
@@ -174,7 +173,6 @@
         "description": "Password for account associated to vigour.mail.username"
       }
     },
-
     "slack": {
       "id": {
         "val": false,
@@ -192,7 +190,6 @@
         "description": "Slack channel to send warnings to, without the leading #"
       }
     },
-
     "git": {
       "owner": {
         "val": false,
@@ -249,19 +246,16 @@
         }
       }
     },
-
     "cleanup": {
       "val": false,
       "env": "FERRY_CLEANUP",
       "description": "Removes all downloaded and created assets, state.json, and history.json transformHistory.json is conserved"
     },
-
     "src": {
       "val": false,
       "env": "FERRY_SRC",
       "description": "Absolute path to app"
     },
-
     "release": {
       "val": false,
       "env": "FERRY_RELEASE",
@@ -284,7 +278,6 @@
         "description": "Path to release repo"
       }
     },
-
     "deploy": {
       "val": false,
       "env": "FERRY_DEPLOY",
