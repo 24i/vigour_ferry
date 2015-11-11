@@ -86,6 +86,7 @@
     ]
   },
   "vigour": {
+    "category": "services",
     "buildDir": {
       "val": "ferryBuilt",
       "env": "FERRY_BUILD_DIR",
