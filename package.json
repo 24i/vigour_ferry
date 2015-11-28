@@ -89,159 +89,159 @@
     "category": "services",
     "buildDir": {
       "val": "ferryBuilt",
-      "env": "FERRY_BUILD_DIR",
+      "_env": "FERRY_BUILD_DIR",
       "description": "Name to assign to build directory created within app"
     },
     "maxHistory": {
       "val": 5,
-      "env": "FERRY_MAX_HISTORY",
+      "_env": "FERRY_MAX_HISTORY",
       "description": "Maximum number of versions to serve"
     },
     "shaPlaceholder": {
       "val": "SHA",
-      "env": "FERRY_SHA_PLACEHOLDER",
+      "_env": "FERRY_SHA_PLACEHOLDER",
       "description": "Placeholder for SHA in css files needing rebasing"
     },
     "port": {
       "val": 8000,
-      "env": "FERRY_PORT",
+      "_env": "FERRY_PORT",
       "description": "Port on which to listen for app clients"
     },
     "retryAfter": {
       "val": 1,
-      "env": "FERRY_RETRY_AFTER",
+      "_env": "FERRY_RETRY_AFTER",
       "description": "OBSOLETE"
     },
     "minFreeSpace": {
       "val": 0.15,
-      "env": "FERRY_MIN_SPACE",
+      "_env": "FERRY_MIN_SPACE",
       "description": "Free space threshold for notifying dev"
     },
     "shaDir": {
       "val": "shas",
-      "env": "FERRY_SHA_DIR",
+      "_env": "FERRY_SHA_DIR",
       "description": "Directory holding app clones"
     },
     "shaHistoryName": {
       "val": "history.json",
-      "env": "FERRY_SHA_HISTORY_NAME",
+      "_env": "FERRY_SHA_HISTORY_NAME",
       "description": "Sha history file name"
     },
     "stateFileName": {
       "val": "state.json",
-      "env": "FERRY_STATE_FILENAME",
+      "_env": "FERRY_STATE_FILENAME",
       "description": "Name of dynamic file containing state"
     },
     "robots": {
       "val": true,
-      "env": "FERRY_ROBOTS",
+      "_env": "FERRY_ROBOTS",
       "description": "Serves `ferry/robots.txt` on `GET /robots.txt` by default. Use `--robots false` to serve the `robots.txt` from your app instead"
     },
     "geo": {
       "val": true,
-      "env": "FERRY_GEO",
+      "_env": "FERRY_GEO",
       "description": "Serves `ferry/geo.json` on `GET /geo` by default. Use `--geo false` to remove this feature"
     },
     "akamai": {
       "val": false,
-      "env": "FERRY_AKAMAI",
+      "_env": "FERRY_AKAMAI",
       "description": "Includes Akamai-specific 'Edge-Control' cache headers"
     },
     "warn": {
       "val": true,
-      "env": "FERRY_WARN",
+      "_env": "FERRY_WARN",
       "description": "Disables slack and mail warnings (useful for testing)"
     },
     "mail": {
       "fromAddress": {
         "val": false,
-        "env": "MAIL_FROM",
+        "_env": "MAIL_FROM",
         "description": "E-mail address to use in the 'from' field"
       },
       "to": {
         "val": false,
-        "env": "MAIL_TO",
+        "_env": "MAIL_TO",
         "description": "Comma-separated list of e-mail addresses to contact"
       },
       "username": {
         "val": false,
-        "env": "MAIL_USERNAME",
+        "_env": "MAIL_USERNAME",
         "description": "Username of e-mail account to authenticate as"
       },
       "password": {
         "val": false,
-        "env": "MAIL_PASSWORD",
+        "_env": "MAIL_PASSWORD",
         "description": "Password for account associated to vigour.mail.username"
       }
     },
     "slack": {
       "id": {
         "val": false,
-        "env": "SLACK_ID",
+        "_env": "SLACK_ID",
         "description": "String identifying the slack service to contact"
       },
       "token": {
         "val": false,
-        "env": "SLACK_TOKEN",
+        "_env": "SLACK_TOKEN",
         "description": "Token to use when authenticating slack requests"
       },
       "channel": {
         "val": "packers",
-        "env": "SLACK_CHANNEL",
+        "_env": "SLACK_CHANNEL",
         "description": "Slack channel to send warnings to, without the leading #"
       }
     },
     "git": {
       "owner": {
         "val": false,
-        "env": "GIT_OWNER",
+        "_env": "GIT_OWNER",
         "description": "Username for the GitHub account that owns the app"
       },
       "repo": {
         "val": false,
-        "env": "GIT_REPO",
+        "_env": "GIT_REPO",
         "description": "App repository name"
       },
       "branch": {
         "val": false,
-        "env": "GIT_BRANCH",
+        "_env": "GIT_BRANCH",
         "description": "Branch of app to serve"
       },
       "username": {
         "val": false,
-        "env": "GIT_USERNAME",
+        "_env": "GIT_USERNAME",
         "description": "Username for the git account to clone with"
       },
       "password": {
         "val": false,
-        "env": "GIT_PASSWORD",
+        "_env": "GIT_PASSWORD",
         "description": "Password for the account associated to vigour.git.username"
       },
       "port": {
         "val": 8443,
-        "env": "GIT_PORT",
+        "_env": "GIT_PORT",
         "description": "Port on which to listen for GitHub WebHooks"
       },
       "url": {
         "val": "git@github.com",
-        "env": "GIT_URL",
+        "_env": "GIT_URL",
         "description": "git@github.com"
       },
       "api": {
         "hostname": {
           "val": "api.github.com",
-          "env": "GIT_API_HOST",
+          "_env": "GIT_API_HOST",
           "description": "api.github.com"
         },
         "headers": {
           "Accept": {
             "val": "application/vnd.github.v3+json",
-            "env": "GIT_ACCEPT",
+            "_env": "GIT_ACCEPT",
             "description": "application/vnd.github.v3+json"
           },
           "User-Agent": {
             "val": "ferry",
-            "env": "GIT_UA",
+            "_env": "GIT_UA",
             "description": "User agent string ferry should use when making requests to GitHub"
           }
         }
@@ -249,89 +249,89 @@
     },
     "cleanup": {
       "val": false,
-      "env": "FERRY_CLEANUP",
+      "_env": "FERRY_CLEANUP",
       "description": "Removes all downloaded and created assets, state.json, and history.json transformHistory.json is conserved"
     },
     "src": {
       "val": false,
-      "env": "FERRY_SRC",
+      "_env": "FERRY_SRC",
       "description": "Absolute path to app"
     },
     "release": {
       "val": false,
-      "env": "FERRY_RELEASE",
+      "_env": "FERRY_RELEASE",
       "description": "Commits assets declared in app's package.json to sepcified branch of release repo (<this_repo>-packer-release), creating it if needed"
     },
     "releaseRepo": {
       "suffix": {
         "val": "-packer-release",
-        "env": "FERRY_RELEASE_SUFFIX",
+        "_env": "FERRY_RELEASE_SUFFIX",
         "description": "Suffix for release repo"
       },
       "name": {
         "val": false,
-        "env": "FERRY_RELEASE_NAME",
+        "_env": "FERRY_RELEASE_NAME",
         "description": "Name of release repo"
       },
       "absPath": {
         "val": false,
-        "env": "FERRY_RELEASE_ABS_PATH",
+        "_env": "FERRY_RELEASE_ABS_PATH",
         "description": "Path to release repo"
       }
     },
     "deploy": {
       "val": false,
-      "env": "FERRY_DEPLOY",
+      "_env": "FERRY_DEPLOY",
       "description": "Install ferry on remote machine"
     },
     "server": {
       "ip": {
         "val": false,
-        "env": "FERRY_IP",
+        "_env": "FERRY_IP",
         "description": "Deploys and launches a ferry for this app at provided IP"
       },
       "identity": {
         "val": false,
-        "env": "FERRY_IDENTITY",
+        "_env": "FERRY_IDENTITY",
         "description": "Path to identity file to use when connecting to vigour.server.ip"
       },
       "ssh": {
         "id": {
           "val": false,
-          "env": "FERRY_SSH_ID",
+          "_env": "FERRY_SSH_ID",
           "description": "Path to SSH private key"
         },
         "key": {
           "val": false,
-          "env": "FERRY_SSH_KEY",
+          "_env": "FERRY_SSH_KEY",
           "description": "Path to SSH public key"
         }
       },
       "ssl": {
         "cert": {
           "val": false,
-          "env": "FERRY_SSL_CERT",
+          "_env": "FERRY_SSL_CERT",
           "description": "Path to SSL certificate"
         },
         "key": {
           "val": false,
-          "env": "FERRY_SSL_KEY",
+          "_env": "FERRY_SSL_KEY",
           "description": "Path to private key of SSL certificate"
         },
         "password": {
           "val": false,
-          "env": "FERRY_SSL_PASSWORD",
+          "_env": "FERRY_SSL_PASSWORD",
           "description": "Password for SSL certificate"
         }
       },
       "user": {
         "val": false,
-        "env": "FERRY_USER",
+        "_env": "FERRY_USER",
         "description": "User to authenticate as on vigour.server.ip"
       },
       "remoteHome": {
         "val": false,
-        "env": "FERRY_REMOTEHOME",
+        "_env": "FERRY_REMOTEHOME",
         "description": "Path to home directory on remote machine where ferry should be installed"
       }
     }
