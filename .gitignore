@@ -4,5 +4,6 @@ node_modules
 .directv.json
 .mtvplay.json
 .vigour-example.json
+.cc.json
 build.*
 bundle.*
