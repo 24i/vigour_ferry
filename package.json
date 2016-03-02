@@ -93,7 +93,7 @@
       "description": "Name to assign to build directory created within app"
     },
     "maxHistory": {
-      "val": 5,
+      "val": 2,
       "_env": "FERRY_MAX_HISTORY",
       "description": "Maximum number of versions to serve"
     },
