@@ -1,4 +1,4 @@
-*<p style="border-style: solid; border-width: 0 0 0 5px; border-color: #F9DD52; padding-left: 5px;">This repo is deprecated and will be deleted soon. Use [packer-server](https://github.com/vigour-io/packer-server) instead</p>*
+*This repo is deprecated and will be deleted soon. Use [packer-server](https://github.com/vigour-io/packer-server) instead*
 
 ferry
 ===
