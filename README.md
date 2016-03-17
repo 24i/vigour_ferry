@@ -1,3 +1,5 @@
+*This repo is deprecated and will be deleted soon. Use [packer-server](https://github.com/vigour-io/packer-server)*
+
 ferry
 ===
 
