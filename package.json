@@ -43,6 +43,8 @@
     "forever": "^0.14.1",
     "graceful-fs": "^3.0.6",
     "lodash": "^3.10.1",
+    "lodash.template": "^4.2.4",
+    "lodash.trim": "^4.2.0",
     "nodemailer": "^1.3.0",
     "npmlog": "^0.1.1",
     "oboe": "^2.1.1",
@@ -50,6 +52,7 @@
     "promise": "^6.1.0",
     "uglify-js": "^2.4.15",
     "vigour-fs": "^3.0.2",
+    "vigour-fs-promised": "^2.0.2",
     "vigour-js": "^0.2.2"
   },
   "homepage": "https://github.com/vigour-io/ferry",
@@ -87,6 +90,16 @@
   },
   "vigour": {
     "category": "services",
+    "jsonldurl": {
+      "val": "http://54.93.97.199:50000",
+      "_env": "FERRY_JSONLD_URL",
+      "description": "Where to get the json ld files"
+    },
+    "jsonldmaxage": {
+      "val": 1800000,
+      "_env": "FERRY_JSONLD_MAXAGE",
+      "description": "Max time (in milliseconds) a jsonld-transformed file is considered valid, after which the transform will be re-applied. Defaults to 30 minutes."
+    },
     "buildDir": {
       "val": "ferryBuilt",
       "_env": "FERRY_BUILD_DIR",
