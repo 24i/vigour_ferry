@@ -1,6 +1,6 @@
 {
   "name": "vigour-ferry",
-  "version": "4.0.2",
+  "version": "4.0.3",
   "description": "Pushes new timestamps for apps to be notified of updates",
   "main": "lib/index.js",
   "bin": {
